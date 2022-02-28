@@ -2,64 +2,49 @@ import React, { useState, useEffect } from "react";
 import { Alert } from 'react-native'
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Icon, withBadge } from 'react-native-elements'
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from "@expo/vector-icons";
 import { useQuery } from "@apollo/react-hooks";
 
-import MainStackNavigator from "./MainStackNavigator";
-import HomeStackNavigator from "./HomeStackNavigator";
-import ChatStackNavigator from "./ChatStackNavigator";
-import CartStackNavigator from "./CartStackNavigator";
+import CustomerStackNavigator from "./CustomerStackNavigator";
+import OrderStackNavigator from "./OrderStackNavigator";
+import ReportStackNavigator from "./ReportStackNavigator";
+import AccountingStackNavigator from "./AccountingStackNavigator";
 import themes from "../assets/themes";
-import { GET_AUTH, GET_CURRENT_RESIDENT, GET_SHOPPING_CART_COUNT, GET_GUILD_ENROLLED } from "../queries/queries_query";
+import { GET_AUTH, GET_CURRENT_VENDOR } from "../queries/queries_query";
+import Loading from './Loading'
 
 const Tab = createBottomTabNavigator();
 
-const TabNavigator = () => {
+const TabNavigator = (props) => {
+const { vendor } = props
+console.log('vendor in TabNav', vendor)
+// const [authed,setAuthed] = useState()
+// const [vendor, setVendor] = useState()
 
-
-const [authed,setAuthed] = useState()
-const [shoppingCartCount, setShoppingCartCount] = useState(0)
-
-// useEffect(() => {
-
-//   const BadgedIcon = withBadge(shoppingCartCount, {textStyle: {color: 'red', fontWeight: 'bold', fontSize: 15}, badgeStyle: {top: -15, left: -5}, status: ''})(Icon);
-// }, [shoppingCartCount])
 
 const { data: authData } = useQuery(GET_AUTH);
+const {
+  auth: { isAuthed },
+} = authData;
+  // useEffect(()=>
+  // {
+ 
+  // setAuthed(isAuthed)},[authData])
 
-  useEffect(()=>
-  {
-  const {
-    auth: { isAuthed },
-  } = authData;
-  setAuthed(isAuthed)},[authData])
+// const { data: vendorData, loading} = useQuery(GET_CURRENT_VENDOR)
+// console.log('vendorData', vendorData)
 
-const { data: countData} = useQuery(GET_SHOPPING_CART_COUNT)
-
-  useEffect(() => {
-    const { shoppingCartCount: {count}} = countData
-    setShoppingCartCount(count)
-  }, [countData])
-
-
-
-// useEffect(() => {
-
-//   DeviceEventEmitter.addListener('updateShoppingCart', value => {
-//   console.log('shoppingCartCount',value.count)
-//   setShoppingCartCount(value.count)
-// })
-//   return () => {
-//     DeviceEventEmitter.removeListener('updateShoppingCart')
-//   }
-// }, [])
-// const { data: residentData, loading, error } = useQuery(GET_CURRENT_RESIDENT)
-// const { data: cartData, loading: cartLoading, error: cartError } = useQuery(GET_SHOPPING_CART, { variables: { resident: residentName}})
+  // useEffect(() => {
+  //   if(vendorData) {
+  //     const { getCurentVendor} = vendorData
+  //   setVendor(getCurentVendor)
+  //   }
+    
+  // }, [vendorData])
 
 
 
-  return (
-    <Tab.Navigator
+     return (<Tab.Navigator
       lazy={true}
       screenOptions={({ route }) => ({
         tabBarLabel:() => {return null},
@@ -67,41 +52,48 @@ const { data: countData} = useQuery(GET_SHOPPING_CART_COUNT)
           let iconName;
           let iconReturned;
           switch (route.name) {
-            case "Home":
-              iconName = focused ? "home" : "home-outline";
+            case "Orders":
+              iconName = focused ? "file-tray-full" : "file-tray-full-outline";
               iconReturned = (
                 <Ionicons name={iconName} size={size} color={color} />
               );
               break;
-            case "DashBoard":
-              iconName = focused ? "view-dashboard" : "view-dashboard-outline";
+            case "Customer":
+              iconName = focused ? "md-people-sharp" : "md-people-outline";
               iconReturned = (
-                <MaterialCommunityIcons
+                <Ionicons
                   name={iconName}
                   size={size}
                   color={color}
                 />
               );
               break;
-            case "Cart":
-              iconName = focused ? "cart" : "cart-outline";
-              const BadgedIcon = withBadge(shoppingCartCount, 
-                                          {textStyle: {color: 'red', fontWeight: 'bold', fontSize: 12}, 
-                                          badgeStyle: {top: -10, left: -20}, status: ''})(Icon);
+            case "Accounting":
+              iconName = focused ? "calculator-sharp" : "calculator-outline";
+              // const BadgedIcon = withBadge(shoppingCartCount, 
+              //                             {textStyle: {color: 'red', fontWeight: 'bold', fontSize: 12}, 
+              //                             badgeStyle: {top: -10, left: -20}, status: ''})(Icon);
 
+              // iconReturned = (
+              //   shoppingCartCount > 0 && authed? 
+              //   <BadgedIcon 
+              //   type="material-community" 
+              //   name={iconName} 
+              //   size={size} 
+              //   color={color}
+              //   /> : 
+              //   <MaterialCommunityIcons name={iconName} size={size} color={color} />
+              // );
               iconReturned = (
-                shoppingCartCount > 0 && authed? 
-                <BadgedIcon 
-                type="material-community" 
-                name={iconName} 
-                size={size} 
-                color={color}
-                /> : 
-                <MaterialCommunityIcons name={iconName} size={size} color={color} />
+                <Ionicons
+                  name={iconName}
+                  size={size}
+                  color={color}
+                />
               );
               break;
-            case "Chat":
-              iconName = focused ? "md-chatbubbles-sharp" : "md-chatbubbles-outline";
+            case "Reports":
+              iconName = focused ? "newspaper-sharp" : "newspaper-outline";
               iconReturned = (
                 <Ionicons name={iconName} size={size} color={color} />
               );
@@ -120,47 +112,57 @@ const { data: countData} = useQuery(GET_SHOPPING_CART_COUNT)
         inactiveTintColor: "gray",
       }}
     >
-      <Tab.Screen name="DashBoard" component={MainStackNavigator} />
-      <Tab.Screen
-        name="Home"
-        component={HomeStackNavigator}
+      {/* {loading&&<Loading/>} */}
+
+     <Tab.Screen
+        name="Orders"
+        component={OrderStackNavigator}
         listeners={({ navigation, route }) => ({
           tabPress: (e) => {
             // console.log('isAuthed', isAuthed)
-            if (!authed) {
+            if (!isAuthed) {
+              e.preventDefault();
+              // navigation.navigate("Login");
+            }
+          },
+        })}
+        initialParams={{vendor}}
+      />
+      <Tab.Screen 
+        name="Customer" 
+        component={CustomerStackNavigator}  
+        initialParams={{vendor}}
+        />
+     
+      <Tab.Screen
+        name="Accounting"
+        component={AccountingStackNavigator}
+        listeners={({ navigation, route }) => ({
+          tabPress: (e) => {
+            // console.log('isAuthed', isAuthed)
+            if (!isAuthed) {
               e.preventDefault();
               navigation.navigate("Login");
             }
           },
         })}
+        initialParams={{vendor}}
       />
       <Tab.Screen
-        name="Cart"
-        component={CartStackNavigator}
+        name="Reports"
+        component={ReportStackNavigator}
         listeners={({ navigation, route }) => ({
           tabPress: (e) => {
-            // console.log('isAuthed', isAuthed)
-            if (!authed) {
-              e.preventDefault();
-              navigation.navigate("Login");
-            }
-          },
-        })}
-      />
-      <Tab.Screen
-        name="Chat"
-        component={ChatStackNavigator}
-        listeners={({ navigation, route }) => ({
-          tabPress: (e) => {
-            if (!authed) {
+            if (!isAuthed) {
               e.preventDefault();
               navigation.navigate("Login");
             } 
           },
         })}
+        initialParams={{vendor}}
       />
-    </Tab.Navigator>
-  );
+    </Tab.Navigator>)
+   
 };
 
 export default TabNavigator;

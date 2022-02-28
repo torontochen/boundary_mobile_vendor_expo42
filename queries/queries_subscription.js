@@ -1,70 +1,92 @@
 import gql from "graphql-tag";
 
-export const GUILD_DEAL_TRANSACTION_ADDED = gql`
-  subscription {
-    guildDealTransactionAdded {
-      transactionId
-        resident
-        vendor
-        purchaseAmount
-        date
+export const CUSTOMER_RATING_ADDED = gql`
+  subscription{
+    customerRatingAdded {
+      customerName
+      customerAvatar
+      rating
+      comments
+      time
+      reply
+      vendor
     }
   }`;
 
-export const GUILD_CHAT_MSG_ADDED = gql`
-subscription {
-  guildChatMsgAdded {
-    guildFullName
-    message {
-      author
-      data
-      type
-      date
-    }
-    residentName
-    residentAvatar
-    rank
-  }
-}`;
-
-export const UPDATE_ACTIVE_FLYER = gql`
-  subscription {
-    updateActiveFlyers{
-      businessTitle
-      logo
-      businessCategory
-      vendorActiveFlyer {
-        flyerId
-        flyerTitle
-        flyerType
-        dateFrom
-        dateTo
-        promoInfo
-      }
-    }
-  }
-`;
-
-export const RESIDENT_ORDER_ADDED = gql`
+export const MESSAGE_RECEIVED = gql`
   subscription{
-    residentOrderAdded{
+    messageReceived {
+      sender
+      receiver
+      receiverType
+      time
+      text
+    }
+  }`;
+
+export const PRODUCT_RATING_ADDED = gql`
+  subscription{
+    productRatingAdded{
+      customerName
+      customerAvatar
+      comments
+      reply
+      time
+      rating
+      itemCode
+      vendor
+    }
+  }`;
+
+export const VENDOR_ORDER_ADDED = gql`
+  subscription{
+    vendorOrderAdded{
       date
       orderNo
-      vendor
-      resident
+      tax
+      totalAmount
       deliveryType
       deliveryAddress
       pickupAddress
-      totalAmount
+      resident
+      vendor
       paymentMethod
-      tax
-      orderItem {
+      orderItems {
+        itemCode
         description
         quantity
         unitPrice
         taxRate
-        photo
+        isFulfilled
       }
+    }
+  }`;
+
+export const VENDOR_ORDER_STATUS_CHANGED = gql`
+subscription{
+  vendorOrderStatusChanged{
+    vendor
+    orderNo
+    status
+  }
+}`;
+
+
+
+export const VENDOR_SETTLEMENT_RECORD_ADDED = gql`
+  subscription{
+    vendorSettlementRecordAdded{
+      date
+      vendor
+      salesOrderNo
+      purchaseOrderNo
+      totalAmount
+      tax
+      boundaryGold
+      paymentMethod
+      boundaryPayable
+      amountPaidByCustomer
+      amountPaidToBoundary
     }
   }`;
 

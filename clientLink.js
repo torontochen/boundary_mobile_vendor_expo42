@@ -1,5 +1,7 @@
 // import React from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {  Platform } from 'react-native'
+
 import { ApolloClient } from "apollo-client";
 import { InMemoryCache } from "apollo-cache-inmemory";
 import { createUploadLink } from "apollo-upload-client";
@@ -141,9 +143,28 @@ const httpLink = ApolloLink.from([
         if (err.name === "AuthenticationError") {
           console.log('httplink',err.name);
           // if(AsyncStorage.token){
+            // (async () => {
+            //   await AsyncStorage.removeItem("token");
+            //   await AsyncStorage.clear();
+            // })();
+
             (async () => {
-              await AsyncStorage.removeItem("token");
-              await AsyncStorage.clear();
+
+              // AsyncStorage.getAllKeys().then(AsyncStorage.multiRemove)
+              // await AsyncStorage.removeItem("token");
+              // await AsyncStorage.clear();
+            const asyncStorageKeys = await AsyncStorage.getAllKeys()
+            console.log('asyncStorageKeys',asyncStorageKeys)
+              if (asyncStorageKeys.length > 0) {
+                if (Platform.OS === 'android') {
+
+                  await AsyncStorage.clear();
+                }
+                if (Platform.OS === 'ios') {
+                  
+                  await AsyncStorage.multiRemove(asyncStorageKeys);
+                }
+          }
             })();
           // }
 
