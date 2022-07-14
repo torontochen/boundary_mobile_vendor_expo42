@@ -1,21 +1,30 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { View, Text, StyleSheet, ActivityIndicator, TouchableWithoutFeedback, Dimensions,
-    Keyboard,  } from 'react-native'
+import { View, Text, StyleSheet, ActivityIndicator, TouchableWithoutFeedback, Dimensions, Image,
+    Keyboard  } from 'react-native'
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { Tab, TabView, Overlay, Input, Button, Icon, Avatar} from 'react-native-elements'
 import { useQuery, useMutation, useLazyQuery } from '@apollo/react-hooks'
 import Menu, { MenuItem, MenuDivider } from "react-native-material-menu";
 
-import { GET_AUTH, GET_AUTH_ERROR , GET_VENDOR_ORDERS, GET_CURRENT_VENDOR} from '../../queries/queries_query'
+import { GET_AUTH, 
+  GET_AUTH_ERROR , 
+  GET_VENDOR_ORDERS, 
+  GET_CURRENT_VENDOR, 
+  GET_ITEM_CATALOG, 
+  GET_RESIDENT_LIST, 
+  GET_VENDOR_SALES_INFO,
+  GET_VENDOR_SETTLEMENT_RECORDS
+ } from '../../queries/queries_query'
 import { SIGNIN_VENDOR, SET_AUTH_ERROR, SET_AUTH } from '../../queries/queries_mutation'
-import Orders  from '../../components/Orders'
+import CustomerOrders  from '../../components/CustomerOrders'
 import themes from "../../assets/themes";
+import SalesOrder from '../../components/SalesOrder';
 
 const { width, height } = Dimensions.get("window");
 
 
-const OrdersScreen = ({ navigation, route }) => {
+const OrderScreen = ({ navigation, route }) => {
     // const { vendor } = route.params
 console.log('vendor in orderscreen', vendor)
     const rightIcon = useRef(null);
@@ -23,7 +32,6 @@ console.log('vendor in orderscreen', vendor)
     const [index, setIndex] = useState(0)
     const [password, setPassword] = useState("");
     const [email, setEmail] = useState("");
-    const [isInterfaceOverlayVisible, setIsInterfaceOverlayVisible] = useState(false)
     const [vendorOrders, setVendorOrders] = useState()
     const [vendor, setVendor] = useState()
 
@@ -39,7 +47,12 @@ console.log('vendor in orderscreen', vendor)
 
     const { data: vendorData } = useQuery(GET_CURRENT_VENDOR)
 
-    const [getVendorOrders,{ data: orderData, loading }] = useLazyQuery(GET_VENDOR_ORDERS)
+    const [getVendorOrders, { data: orderData, loading }] = useLazyQuery(GET_VENDOR_ORDERS)
+    const [getItemCatalog, {data: catalogData, catalogLoading}] = useLazyQuery(GET_ITEM_CATALOG)
+    const [ getVendorSalesInfo ] = useLazyQuery(GET_VENDOR_SALES_INFO)
+    const [getResidentList] = useLazyQuery(GET_RESIDENT_LIST)
+    const [getVendorSettlementRecords] = useLazyQuery(GET_VENDOR_SETTLEMENT_RECORDS)
+
 
     const hideMenu = () => {
       rightIcon.current.hide();
@@ -54,7 +67,7 @@ console.log('vendor in orderscreen', vendor)
       // setIsAuthed(!isAuthed)
       // apolloClient.onResetStore((cache) => cache.writeData({ data: defaultStates }))
       try {
-        await AsyncStorage.removeItem("token");
+        await AsyncStorage.removeItem("vendorToken");
         // navigation.replace("DashBoard");
         // await AsyncStorage.clear();
         // await client.clearStore();
@@ -70,6 +83,10 @@ console.log('vendor in orderscreen', vendor)
         const { getCurrentVendor } = vendorData
         setVendor(getCurrentVendor)
         getVendorOrders({ variables: { vendor: getCurrentVendor.businessTitle}})
+        getItemCatalog({ variables: { subcategory: null, businessTitle: getCurrentVendor.businessTitle}})
+        getResidentList()
+        getVendorSalesInfo({ variables: { vendor: getCurrentVendor.businessTitle}})
+        getVendorSettlementRecords({ variables: { vendor: getCurrentVendor.businessTitle}})
       }
     }, [vendorData])
 
@@ -185,7 +202,7 @@ console.log('vendor in orderscreen', vendor)
 
     useEffect(() => {
       if(orderData) {
-        // console.log('order', orderData)
+        console.log('orders', orderData)
         const { getVendorOrders } = orderData
         setVendorOrders(getVendorOrders)
       }
@@ -211,7 +228,7 @@ console.log('vendor in orderscreen', vendor)
       console.log("signIn");
       const { token } = signinVendor;
       try {
-        await AsyncStorage.setItem("token", token);
+        await AsyncStorage.setItem("vendorToken", token);
         setAuth({ variables: { isAuthed: true } });
         // setIsAuthed(!isAuthed)
         navigation.replace('Order')
@@ -327,9 +344,11 @@ console.log('vendor in orderscreen', vendor)
 
               <TabView value={index} onChange={setIndex} animationType='timing'>
                
-                <TabView.Item style={{ backgroundColor: 'white', width: '100%' }  } onMoveShouldSetResponder={(e) => e.stopPropagation()}
+                <TabView.Item 
+                  style={{ backgroundColor: 'white', width: '100%' }  } 
+                  onMoveShouldSetResponder={(e) => e.stopPropagation()}
                 >
-                 {vendor&&<Orders orders={vendorOrders} navigation={navigation} vendor={vendor.businessTitle}/>}
+                 {vendor&&vendorOrders&&<CustomerOrders orders={vendorOrders} navigation={navigation} vendor={vendor.businessTitle}/>}
                 </TabView.Item>
 
                 {/* <TabView.Item style={{ backgroundColor: 'blue', width: '100%' }}>
@@ -340,20 +359,34 @@ console.log('vendor in orderscreen', vendor)
                 <Text h1>yes</Text>
                 </TabView.Item> */}
 
-                <TabView.Item style={{ backgroundColor: 'white', width: '100%' }}>
-                <Text h1>Cart</Text>
+                <TabView.Item style={{ backgroundColor: 'white', width: '100%' }} 
+                onMoveShouldSetResponder={(e) => e.stopPropagation()}>
+                {vendor&&catalogData&&
+                <SalesOrder 
+                  catalog={catalogData.getItemCatalog} 
+                  vendor={vendorData.getCurrentVendor} 
+                  navigation={navigation}
+                  
+                />}
                 </TabView.Item>
 
             </TabView>     
                 
              {/* vendor interface loading overlay */}
                 <Overlay
-                visible={loading}
+                visible={loading || catalogData == null}
+                fullScreen
                 >
-                <ActivityIndicator
-                    color="#0000ff"
+                  <View style={{height: '100%', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
+            
+                  <Image source={{uri: 'https://www.animatedimages.org/data/media/106/animated-man-image-0394.gif'}} style={{width: 80, height: 80}} resizeMode='contain' />
+
+                  </View>
+
+                {/* <ActivityIndicator
+                    color={themes.primary}
                     size='large'
-                />
+                /> */}
                 </Overlay>
          </> }
 
@@ -384,7 +417,7 @@ const styles = StyleSheet.create({
     },
     errorMsg: {
         color: "#C51162",
-        fontFamily: "Roboto_medium",
+        fontFamily: "mr400",
       },
     errorMsgContainer: {
         height: 30,
@@ -413,4 +446,4 @@ const styles = StyleSheet.create({
 
 
 
-export default OrdersScreen
+export default OrderScreen

@@ -5,16 +5,43 @@ import { Container } from "native-base";
 import * as Font from "expo-font";
 import { Ionicons } from "@expo/vector-icons";
 import { ApolloProvider, useQuery } from "@apollo/react-hooks";
-import AppNavigator from "./navigator/AppNavigator";
+import { setCustomText } from 'react-native-global-props'
+import {
+  useFonts,
+  Montserrat_100Thin,
+  Montserrat_100Thin_Italic,
+  Montserrat_200ExtraLight,
+  Montserrat_200ExtraLight_Italic,
+  Montserrat_300Light,
+  Montserrat_300Light_Italic,
+  Montserrat_400Regular,
+  Montserrat_400Regular_Italic,
+  Montserrat_500Medium,
+  Montserrat_500Medium_Italic,
+  Montserrat_600SemiBold,
+  Montserrat_600SemiBold_Italic,
+  Montserrat_700Bold,
+  Montserrat_700Bold_Italic,
+  Montserrat_800ExtraBold,
+  Montserrat_800ExtraBold_Italic,
+  Montserrat_900Black,
+  Montserrat_900Black_Italic 
+} from "@expo-google-fonts/montserrat";
 
+
+
+import AppNavigator from "./navigator/AppNavigator";
 import clientLink from "./clientLink";
 
 // import FingerprintJS from "@fingerprintjs/fingerprintjs";
 
 const fetchFonts = () => {
   return Font.loadAsync({
-    Roboto: require("native-base/Fonts/Roboto.ttf"),
-    Roboto_medium: require("native-base/Fonts/Roboto_medium.ttf"),
+    mr300: Montserrat_300Light,
+    mr400: Montserrat_400Regular,
+    mr800: Montserrat_800ExtraBold,
+    mr700: Montserrat_700Bold,
+    mr900: Montserrat_900Black,
     ...Ionicons.font,
   });
 };
@@ -35,6 +62,8 @@ export default function App() {
         onError={(err) => console.log(err)}
       />
     );
+  } else {
+    setCustomText( {style: { fontFamily: 'mr400', color: "#5C6BC0"}})
   }
 
   return (
@@ -56,7 +85,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   text: {
-    fontFamily: "Roboto_medium",
+    fontFamily: "mr400",
     fontSize: 50,
   },
 });

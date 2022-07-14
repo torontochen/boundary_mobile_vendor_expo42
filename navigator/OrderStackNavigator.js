@@ -1,20 +1,10 @@
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 
-import OrdersScreen from "../screens/orderScreens/OrdersScreen";
+import OrderScreen from "../screens/orderScreens/OrderScreen";
 import SingleOrderScreen from "../screens/orderScreens/SingleOrderScreen";
-// import StashScreen from "../screens/homeScreen/StashScreen";
-// import GoldCoinScreen from "../screens/homeScreen/GoldCoinScreen";
-// import MailBagScreen from "../screens/homeScreen/MailBagScreen";
-// import SilverCoinScreen from "../screens/homeScreen/SilverCoinScreen";
-// import CouponScreen from "../screens/homeScreen/CouponScreen";
-// import CouponScreenStash from "../screens/homeScreen/CouponScreenStash";
-// import SinglePageScreen from "../screens/homeScreen/SinglePageScreen"
-// import JoinGuildScreen from "../screens/homeScreen/JoinGuildScreen"
-// import StartGuildScreen from "../screens/homeScreen/StartGuildScreen"
-// import MyGuildScreen from "../screens/homeScreen/MyGuildScreen"
-// import GuildDealsScreen from "../screens/homeScreen/GuildDealsScreen"
-// import OrderScreen from "../screens/homeScreen/OrderScreen"
+import CheckoutScreen from "../screens/orderScreens/CheckoutScreen";
+
 
 import themes from "../assets/themes";
 
@@ -29,8 +19,10 @@ const OrderStackNavigator = ({route}) => {
         headerTintColor: themes.primary,
       }}
     >
-      <OrderStack.Screen name="Order" component={OrdersScreen} initialParams={{vendor}}/>
+      <OrderStack.Screen name="Order" component={OrderScreen} initialParams={{vendor}}/>
       <OrderStack.Screen name="SingleOrder" component={SingleOrderScreen} initialParams={{vendor}}/>
+      <OrderStack.Screen name="Checkout" component={CheckoutScreen} initialParams={{vendor}}/>
+      {/* <OrderStack.Screen name="QrCodeScanner" component={QrCodeScanner} initialParams={{vendor}}/> */}
       {/* <HomeStack.Screen name="Stash" component={StashScreen} />
       <HomeStack.Screen name="MailBag" component={MailBagScreen} />
       <HomeStack.Screen name="GoldCoin" component={GoldCoinScreen} />

@@ -85,7 +85,7 @@ export default function StartupScreen(props) {
 
   // Fetch the token from storage then navigate to our appropriate place
   const _bootstrapAsync = async () => {
-    const userToken = await AsyncStorage.getItem("token");
+    const userToken = await AsyncStorage.getItem("vendorToken");
     console.log('userToken',userToken)
     if (userToken) {
       // useLazyQuery(getCurrentVendor)
@@ -133,7 +133,7 @@ export default function StartupScreen(props) {
         console.log("signIn");
         const { token } = signinVendor;
         try {
-          await AsyncStorage.setItem("token", token);
+          await AsyncStorage.setItem("vendorToken", token);
           setAuth({ variables: { isAuthed: true } });
 
           // DeviceEventEmitter.emit('authed', {authed : true})
@@ -166,7 +166,7 @@ export default function StartupScreen(props) {
   const {
     auth: { isAuthed },
   } = authData;
-console.log('isauthed', isAuthed)
+// console.log('isauthed', isAuthed)
 
   useEffect(() => {
     _bootstrapAsync();
@@ -196,6 +196,7 @@ console.log('isauthed', isAuthed)
                     {errMsg !== "" && <Text style={styles.errorMsg}>{errMsg}</Text>}
                 </View>
                 )}
+                <Text style={styles.title}>Boundary Vendor</Text>
               <Image source={{uri: 'https://www.animatedimages.org/data/media/106/animated-man-image-0394.gif'}} style={{width: 80, height: 80}} resizeMode='contain' />
 
                 <View style={styles.form}>
@@ -204,6 +205,7 @@ console.log('isauthed', isAuthed)
                     placeholder="Email"
                     textContentType='emailAddress'
                     inputContainerStyle={styles.input}
+                    inputStyle={styles.inputText}
                     leftIcon={{ type: 'material', name: 'email', color: themes.primary}}
                     clearButtonMode='while-editing'
                     autoCapitalize='none'
@@ -214,6 +216,7 @@ console.log('isauthed', isAuthed)
                     placeholder="Password"
                     textContentType='password'
                     inputContainerStyle={styles.input}
+                    inputStyle={styles.inputText}
                     secureTextEntry={true}
                     leftIcon={{ type: 'font-awesome', name: 'lock', color: themes.primary}}
                     clearButtonMode='while-editing'
@@ -249,9 +252,8 @@ const styles = StyleSheet.create({
   button: {
     width: width - 70,
     marginBottom: 15,
-    // backgroundColor: "#6F5FC6",
-    borderColor: "#6F5FC6",
-    color: "#6F5FC6",
+    backgroundColor: themes.primary,
+    // borderColor: "#6F5FC6",
   },
 buttonContainer: {
     height: "45%",
@@ -267,7 +269,7 @@ buttonContainer: {
 },
 errorMsg: {
     color: "#C51162",
-    fontFamily: "Roboto_medium",
+    fontFamily: "mr400",
   },
 errorMsgContainer: {
     height: 30,
@@ -292,6 +294,10 @@ errorMsgContainer: {
     width: width / 1.5,
     fontSize: 16,
     color: "#6F5FC6",
+    
+  },
+  inputText: {
+    fontFamily: 'mr400'
   },
   screen: {
     flex: 1,
@@ -299,7 +305,15 @@ errorMsgContainer: {
     alignItems: "center",
   },
   text: {
-    fontFamily: "Roboto_medium",
+    fontFamily: "mr400",
     fontSize: 18,
+  },
+  title: {
+    fontFamily: "mr400",
+    fontSize: 24,
+    fontWeight: '700',
+    textAlign: 'center',
+    color: themes.primary,
+    marginVertical: 20
   },
 });

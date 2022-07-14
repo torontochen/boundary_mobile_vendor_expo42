@@ -27,7 +27,7 @@ const authLink = setContext(async (_, { headers }) => {
   // get the authentication token from local storage if it exists
   // const token = localStorage.getItem('token');
   // await AsyncStorage.removeItem("token");
-  let token = await AsyncStorage.getItem("token");
+  let token = await AsyncStorage.getItem("vendorToken");
   // console.log("token");
   // console.log(token);
   // return the headers to the context so httpLink can read them
@@ -90,7 +90,7 @@ const wsLink = ApolloLink.from([
           console.log('wslink',err);
           if(AsyncStorage.token){
             (async () => {
-              await AsyncStorage.removeItem("token");
+              await AsyncStorage.removeItem("vendorToken");
               await AsyncStorage.clear();
             })();
           }
@@ -118,7 +118,7 @@ const wsLink = ApolloLink.from([
       reconnect: true,
       connectionParams: () => {
         if (AsyncStorage.token) {
-          const token = AsyncStorage.getItem("token");
+          const token = AsyncStorage.getItem("vendorToken");
           return {
             Authorization: `Bearer ${token}`,
           };
@@ -162,7 +162,16 @@ const httpLink = ApolloLink.from([
                 }
                 if (Platform.OS === 'ios') {
                   
+                  try {
+                    // await AsyncStorage.removeItem("token");
                   await AsyncStorage.multiRemove(asyncStorageKeys);
+
+                  // await AsyncStorage.clear();
+
+                  } catch (err) {
+                    console.log(err);
+                  }
+                  // await AsyncStorage.removeItem("token");
                 }
           }
             })();

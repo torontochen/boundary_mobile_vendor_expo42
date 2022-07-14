@@ -62,14 +62,22 @@ export const GET_CURRENT_VENDOR = gql`
       aboutUs
       emailVerified
       website
+      rating
       photoList
       boundaryCharge
+      crossBoundaryBusiness
+      lat
+      lng
       messages {
         sender
         receiver
         time
         text
         receiverType
+        fullName 
+        title 
+        guild 
+        isRead
       }
     }
   }
@@ -104,9 +112,18 @@ export const GET_ITEM_CATALOG = gql`
         promoRate
         active
         taxRate
+        event
     }
   }
 `;
+
+export const GET_PICKUP_ADDRESS = gql`
+  query($vendorName: String) {
+    getPickupAddress(vendorName: $vendorName) {
+      vendor
+      address
+    }
+  }`;
 
 export const GET_PRODUCT_RATINGS = gql`
   query($vendor: String) {
@@ -115,10 +132,39 @@ export const GET_PRODUCT_RATINGS = gql`
       customerAvatar
       rating
       comments
-      reply
+      # reply
       time
       itemCode
       vendor
+    }
+  }`;
+
+  export const GET_RESIDENT_LIST = gql`
+    query{
+      getResidentList {
+        residentName
+        firstName
+        lastName
+      }
+    }`;
+
+export const GET_SINGLE_COUPON = gql`
+  query($vendor: String, $flyerId: String, $couponId: String){
+    getSingleCoupon(vendor: $vendor, flyerId: $flyerId, couponId: $couponId) {
+        valueType
+        amount
+        couponId
+        couponTitle
+        oneTimeUsage
+        minimalAmount
+        minimalQty
+        isForAllItems
+        itemsBound {
+          itemCode
+          description
+          unit
+          quantity
+        }
     }
   }`;
 
@@ -138,6 +184,32 @@ query($vendor: String, $itemCode: String) {
   }
 }`;
 
+export const GET_VENDOR_GUILD_DEALS = gql`
+  query($vendor: String!) {
+    getVendorGuildDeals(vendor: $vendor) {
+        _id
+        vendor
+        vendorLogo
+        guildDealType
+        dealRedeemTerm
+        specificItemList
+        guildDealLevels {
+            guildDealCondition
+            guildDealAmount
+            rewardItemsSelected
+            rewardAmount
+        }
+        dateFrom
+        dateTo
+        active
+        dealNo
+        dealFulfillmentRecords{
+          guild
+          purchaseAmount
+        }
+      }
+    }`;
+
 export const GET_VENDOR_ORDERS = gql`
 query($vendor: String) {
   getVendorOrders(vendor: $vendor) {
@@ -145,7 +217,9 @@ query($vendor: String) {
       orderNo
       tax
       totalAmount
+      totalDiscount
       deliveryType
+      customerName
       deliveryAddress
       pickupAddress
       resident
@@ -161,6 +235,24 @@ query($vendor: String) {
       }
   }
 }`;
+
+export const GET_VENDOR_SALES_INFO = gql`
+  query($vendor: String){
+    getVendorSalesInfo(vendor: $vendor){
+      dailySales{
+        sales
+        orders
+      }
+      monthToDateSales{
+        sales
+        orders
+      }
+      yearToDateSales{
+        sales
+        orders
+      }
+    }
+  }`;
 
 export const GET_VENDOR_PROMOTION_EVENTS = gql`
   query($vendor: String) {
@@ -184,6 +276,7 @@ export const GET_VENDOR_SETTLEMENT_RECORDS = gql`
       salesOrderNo
       purchaseOrderNo
       totalAmount
+      totalDiscount
       tax
       boundaryGold
       paymentMethod
@@ -192,5 +285,18 @@ export const GET_VENDOR_SETTLEMENT_RECORDS = gql`
       amountPaidToBoundary
     }
   }`
+
+export const SEARCH_AVAILABLE_DEALS = gql`
+query($input: DealSearchInput){
+  searchAvailableDeals(input: $input) {
+    flyerId
+    couponId
+    valueType
+    amount
+    itemCode
+    couponTitle
+    flyerTitle
+  }
+}`;
 
 

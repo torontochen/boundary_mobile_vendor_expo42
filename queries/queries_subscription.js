@@ -21,6 +21,10 @@ export const MESSAGE_RECEIVED = gql`
       receiverType
       time
       text
+      fullName 
+      title 
+      guild 
+      isRead
     }
   }`;
 
@@ -45,7 +49,9 @@ export const VENDOR_ORDER_ADDED = gql`
       orderNo
       tax
       totalAmount
+      totalDiscount
       deliveryType
+      customerName
       deliveryAddress
       pickupAddress
       resident

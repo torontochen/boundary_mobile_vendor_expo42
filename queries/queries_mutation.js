@@ -10,28 +10,91 @@ export const CHANGE_ORDER_STATUS = gql`
     }
   }`;
 
+export const PLACE_ORDER = gql`
+  mutation(
+    $resident: String 
+    $vendor: String 
+    $deliveryType: String 
+    $customerName: String
+    $deliveryAddress: String 
+    $pickupAddress: String 
+    $totalAmount: Float 
+    $totalDiscount: Float
+    $silverSpand: Int
+    $tax: Float 
+    $valueDiscountList: [ValueDiscountListInput]
+    $salesOrderItems: [SalesOrderItemInput]
+    $paymentMethod: String
+    $dealsTitle: [DealTitleInput]){
+      placeOrder(
+        resident: $resident
+        vendor: $vendor
+        deliveryType: $deliveryType
+        customerName: $customerName
+        deliveryAddress: $deliveryAddress
+        pickupAddress: $pickupAddress
+        totalAmount: $totalAmount
+        totalDiscount: $totalDiscount
+        silverSpand: $silverSpand
+        tax: $tax
+        valueDiscountList: $valueDiscountList
+        salesOrderItems: $salesOrderItems
+        paymentMethod: $paymentMethod
+        dealsTitle: $dealsTitle){
+          date
+          orderNo
+          vendor
+          resident
+          deliveryType
+          customerName
+          deliveryAddress
+          pickupAddress
+          totalAmount
+          totalDiscount
+          paymentMethod
+          tax
+          orderItems {
+            description
+            quantity
+            unitPrice
+            taxRate
+            photo
+          }
+        }
+    }`;
+
 export const SEND_MESSAGE = gql`
-mutation(
-  $sender: String
-  $receiver: String
-  $receiverType: String
-  $time: String
-  $text:String
-) {
-  sendMessage(
-    sender: $sender
-    receiver: $receiver
-    receiverType: $receiverType
-    time: $time
-    text: $text
+  mutation(
+    $sender: String
+    $receiver: String
+    $receiverType: String
+    $time: String
+    $text:String
+    $fullName: String
+    $title: String
+    $guild: String
   ) {
-    sender
-    receiver
-    receiverType
-    time
-    text
-  }
-}`;
+    sendMessage(
+      sender: $sender
+      receiver: $receiver
+      receiverType: $receiverType
+      time: $time
+      text: $text
+      fullName: $fullName
+      guild: $guild
+      title: $title
+    ) {
+      sender
+      receiver
+      receiverType
+      time
+      text
+      fullName 
+      title 
+      guild 
+      isRead
+    }
+  }`;
 
 export const SET_AUTH = gql`
   mutation($isAuthed: Boolean) {

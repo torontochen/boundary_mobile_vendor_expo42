@@ -93,7 +93,7 @@ const {
               );
               break;
             case "Reports":
-              iconName = focused ? "newspaper-sharp" : "newspaper-outline";
+              iconName = focused ? "bar-chart-sharp" : "bar-chart-outline";
               iconReturned = (
                 <Ionicons name={iconName} size={size} color={color} />
               );

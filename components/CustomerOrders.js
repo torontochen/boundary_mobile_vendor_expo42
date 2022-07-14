@@ -13,12 +13,14 @@ const { height, width } = Dimensions.get("window");
 
 
 
-const Orders = (props) => {
+const CustomerOrders = (props) => {
     const { orders, navigation, vendor } = props
     
-    console.log('orders', orders)
+    // console.log('orders', orders)
     // const [items, setItems] = useState()
     const [receiver, setReceiver] = useState()
+    const [title, setTitle] = useState()
+    const [fullName, setFullName] = useState()
     const [message, setMessage] = useState('')
     const [isMsgOverlayOpen, setIsMsgOverlayOpen] = useState(false)
     const [changed, setChanged] = useState(false)
@@ -47,6 +49,11 @@ const Orders = (props) => {
       return result ? 'No' : 'Yes'
     }
 
+    const formatCurrencyAmount = (value) => {
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 3, 
+    roundingIncrement: 5  }).format(value)
+    }
+
     const toggleMsgOverlay = () => {
       setMessage('')
       setIsMsgOverlayOpen(!isMsgOverlayOpen)
@@ -58,7 +65,7 @@ const Orders = (props) => {
     useSubscription(VENDOR_ORDER_STATUS_CHANGED, {
       onSubscriptionData({subscriptionData}) {
          const { data: { vendorOrderStatusChanged }} = subscriptionData
-         console.log('vendorOrderStatusChanged',vendorOrderStatusChanged)
+        //  console.log('vendorOrderStatusChanged',vendorOrderStatusChanged)
         if(vendor==vendorOrderStatusChanged.vendor) {
           const index = orders.findIndex(order => order.orderNo == vendorOrderStatusChanged.orderNo )
           for(let item of orders[index].orderItems) {
@@ -72,7 +79,7 @@ const Orders = (props) => {
           // }
           setChanged(!changed)
           // setExistingOrders(orders)
-          console.log('orders in subscription', orders)
+          // console.log('orders in subscription', orders)
         }
          
       }
@@ -81,7 +88,7 @@ const Orders = (props) => {
   useSubscription(VENDOR_ORDER_ADDED, {
       onSubscriptionData({subscriptionData}) {
         const { data: { vendorOrderAdded }} = subscriptionData
-        console.log('vendorOrderAdded', vendorOrderAdded)
+        // console.log('vendorOrderAdded', vendorOrderAdded)
         if(vendor==vendorOrderAdded.vendor) {
           // const newOrders = [...orders]
           // newOrders.push(vendorOrderAdded)
@@ -101,15 +108,17 @@ const Orders = (props) => {
     >
         <Card containerStyle={styles.card}>
           <View style={styles.orderNoContainer}>
-            <Card.Title style={{textAlign: 'left', marginVertical: 10, marginLeft: 5}}>{item.orderNo}</Card.Title>
+            <Card.Title style={{textAlign: 'left', marginVertical: 10, marginLeft: 5, color: themes.accent}}>{item.orderNo}</Card.Title>
           </View>
                
                {/* customer */}
                <View style={styles.customer}>
-                  <Text style={{marginRight: 10}}>Customer:&nbsp;{item.resident}</Text>
+                  <Text style={{marginRight: 10}}>Customer:&nbsp;{item.resident + '(' + item.customerName + ')'}</Text>
                   <TouchableWithoutFeedback 
                     onPress={()=> {
-                      setReceiver(item.customerName)
+                      setReceiver(item.resident)
+                      setFullName(item.customerName)
+                      setTitle(item.orderNo)
                       setIsMsgOverlayOpen(!isMsgOverlayOpen)
                       setMessage('')
                     }}>
@@ -119,7 +128,7 @@ const Orders = (props) => {
               {/* amount */}
                <View style={styles.content}>
                  <Text>Items:&nbsp;{item.orderItems.length.toString()}</Text>
-                 <Text>Amount:&nbsp;{item.totalAmount.toFixed(2).toString()}</Text>
+                 <Text>Amount:&nbsp;{formatCurrencyAmount(item.totalAmount)}</Text>
                </View>
               {/* date */}
                <View style={styles.content}>
@@ -135,25 +144,41 @@ const Orders = (props) => {
 
     return (
         <View style={{justifyContent: 'flex-start', alignItems: 'center', height: '100%', }}>
+          {orders.length>0&&
           <FlatList 
                data={orders}
                renderItem={renderItems}
                keyExtractor={item => item.orderNo} 
                extraData={changed}
                refreshing={true}
+               showsVerticalScrollIndicator={false}
           /> 
+          }
+           {orders.length==0&&
+                (<View style={{height: '100%', justifyContent: 'center', alignItems: 'center'}}>
+                    <Icon 
+                        name='file-tray-outline'
+                        type='ionicon'
+                        size={80}
+                        color={themes.shade4}
+                    />
+                    <Text style={{ fontFamily: 'mr900', fontSize: 22, color: themes.shade4, fontWeight: 'bold'}}>No Orders</Text>
+                </View>)
+            }
+          
            {/* message overlay */}
       <Overlay 
         isVisible={isMsgOverlayOpen} 
         onBackdropPress={toggleMsgOverlay}
         overlayStyle={{width: width * 0.8}}>
         <Card>
+          <Card.Title>Reply:&nbsp;{fullName}</Card.Title>
           <Input
             multiline={true}
             numberOfLines={20}
             onChangeText={(text) => setMessage(text)}
             value={message}
-            label='Message'
+            placeholder='Message'
             style={{ height:100, textAlignVertical: 'top',}} 
           />
           <View>
@@ -161,12 +186,14 @@ const Orders = (props) => {
             icon={{ name: "done", type: "material", color: "white" }}
             iconRight
             onPress={() => {
-                sendMessage({ variables: {sender: vendorData.businessTitle,
+                sendMessage({ variables: {sender: vendor,
                                           receiver,
                                           receiverType: 'resident',
                                           text: message,
-                                          time: Date.now().toString()
-                                                }})
+                                          time: Date.now().toString(),
+                                          fullName: fullName,
+                                          guild: '',
+                                          title}})
                 setIsMsgOverlayOpen(false)
             }}
             title="Ok"
@@ -194,9 +221,13 @@ const styles = StyleSheet.create({
       width: width * 0.9,
       height: height / 5,
       backgroundColor: 'white',
-      borderColor: '#7986CB',
+      // borderColor: '#7986CB',
+      shadowOpacity: 0.2,
       borderRadius: 5,
-      paddingHorizontal: 2
+       shadowColor: "#212121",
+       shadowRadius: 3,
+       shadowOffset: { width: 0, height: 1 },
+      paddingHorizontal: 1
     },
     content: {
         flexDirection: 'row',
@@ -212,10 +243,10 @@ const styles = StyleSheet.create({
     },
     orderNoContainer: {
       width: '100%',
-      backgroundColor: '#EDE7F6',
+      backgroundColor: themes.shade4,
       marginTop: -15,
       justifyContent: 'center'
     }
 })
 
-export default Orders
+export default CustomerOrders

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { View, StyleSheet, Text, Dimensions, ScrollView, ActivityIndicator, TouchableWithoutFeedback } from 'react-native'
-import { Card, Icon, Rating, ListItem,  Overlay, Input, Button} from 'react-native-elements'
+import { Card, Icon, Rating, ListItem,  Overlay, Input, Button, Image} from 'react-native-elements'
 import { useQuery, useMutation, useSubscription } from '@apollo/react-hooks';
 import moment from 'moment'
 import _ from 'lodash'
 
 import themes from "../../assets/themes";
-import {  GET_CUSTOMER_RATINGS, GET_PRODUCT_RATINGS } from '../../queries/queries_query';
+import {  GET_CUSTOMER_RATINGS, GET_PRODUCT_RATINGS, GET_RESIDENT_LIST } from '../../queries/queries_query';
 import { SEND_MESSAGE } from '../../queries/queries_mutation'
 import { MESSAGE_RECEIVED, CUSTOMER_RATING_ADDED, PRODUCT_RATING_ADDED } from '../../queries/queries_subscription';
 
@@ -14,9 +14,12 @@ const { height, width } = Dimensions.get("window");
 
 const CustomerScreen = ({ navigation, route }) => {
   const { vendor:vendorData } = route.params
-  console.log('vendor in customer screen', vendorData)
+  // console.log('vendor in customer screen', vendorData)
 
     const [receiver, setReceiver] = useState()
+    const [title, setTitle] = useState()
+    const [realName, setRealName] = useState()
+    const [fullName, setFullName] = useState()
     const [messages, setMessages] = useState()
     const [message, setMessage] = useState('')
     const [isMsgOverlayOpen, setIsMsgOverlayOpen] = useState(false)
@@ -35,7 +38,7 @@ const CustomerScreen = ({ navigation, route }) => {
 
     const { data: productRatingData, loading: productRatingDataLoading } = useQuery(GET_PRODUCT_RATINGS, {variables:{vendor:vendorData.businessTitle}} )
     const { data: customerRatingData, loading: customerRatingLoading } = useQuery(GET_CUSTOMER_RATINGS, {variables:{vendor:vendorData.businessTitle}} )
-
+    const { data: residentListData } = useQuery(GET_RESIDENT_LIST)
     useEffect(() => {
       if(productRatingData&&customerRatingData) {
         const {  messages } = vendorData
@@ -43,12 +46,23 @@ const CustomerScreen = ({ navigation, route }) => {
         const { getProductRatings } = productRatingData
         // console.log('getProductRatings',getProductRatings)
         const { getCustomerRatings } = customerRatingData
+         const { getResidentList : list } = residentListData
+                         
+         getCustomerRatings.map((item, i, array) => {
+            const index = list.findIndex(it => it.residentName == item.customerName)
+            array[i] = {...array[i], fullName: list[index].firstName + ' ' + list[index].lastName} 
+        })
+        getProductRatings.map((item, i, array) => {
+            const index = list.findIndex(it => it.residentName == item.customerName)
+            array[i] = {...array[i], fullName: list[index].firstName + ' ' + list[index].lastName} 
+        })
         // console.log('getCustomerRatings', getCustomerRatings)
         const newMessages = [...messages, ...getProductRatings, ...getCustomerRatings ]
-        console.log(newMessages)
+       
+        // console.log('messages',newMessages)
         setMessages(newMessages)
       }
-    }, [productRatingData, customerRatingData])
+    }, [productRatingData, customerRatingData, residentListData])
 
 
     // const ratingCompleted = (finalRating) => {
@@ -75,7 +89,7 @@ const CustomerScreen = ({ navigation, route }) => {
     useSubscription(CUSTOMER_RATING_ADDED, {
       onSubscriptionData({subscriptionData}) {
         const { data: { customerRatingAdded }} = subscriptionData
-        console.log('customerRatingadded', customerRatingAdded)
+        // console.log('customerRatingadded', customerRatingAdded)
         const {vendor} = customerRatingAdded
         if(vendor==vendorData.businessTitle) {
           const messageList = [...messages]
@@ -87,7 +101,7 @@ const CustomerScreen = ({ navigation, route }) => {
     useSubscription(PRODUCT_RATING_ADDED, {
       onSubscriptionData({subscriptionData}) {
         const { data: { productRatingAdded }} = subscriptionData
-        console.log('productRatingAdded',productRatingAdded)
+        // console.log('productRatingAdded',productRatingAdded)
         const {vendor} = productRatingAdded
         if(vendor==vendorData.businessTitle) {
           const messageList = [...messages]
@@ -99,12 +113,12 @@ const CustomerScreen = ({ navigation, route }) => {
     useSubscription(MESSAGE_RECEIVED, {
       onSubscriptionData({subscriptionData}) {
         const { data: { messageReceived }} = subscriptionData
-        console.log('messageReceived', messageReceived)
+        // console.log('messageReceived', messageReceived)
         const {receiver, receiverType} = messageReceived
         if(receiver == vendorData.businessTitle && receiverType == 'vendor') {
           const messageList = [...messages]
           messageList.push(messageReceived)
-          setMessages(messageList)
+          setMessages([...messageList])
         }
       }
     })
@@ -121,10 +135,15 @@ const CustomerScreen = ({ navigation, route }) => {
                   <ListItem key={i} bottomDivider style={{paddingHorizontal: 5}}>
                     {item.rating&&<ListItem.Content>
                       <View style={styles.titleContainer}>
-                        <ListItem.Title style={{fontSize: 16, marginRight: 5}}>{item.customerName}</ListItem.Title>
+                        <ListItem.Title style={{fontSize: 16, marginRight: 5}}>{item.customerName + '(' + item.fullName  + ')'}</ListItem.Title>
                         <TouchableWithoutFeedback 
                         onPress={()=> {
                           setReceiver(item.customerName)
+                          setTitle(item.itemCode)
+                          // console.log('residentListDta', residentListData)
+                          // const { getResidentList : list } = residentListData
+                          // const index = list.findIndex(it => it.residentName == item.customerName)
+                          setFullName(item.fullName)
                           setIsMsgOverlayOpen(!isMsgOverlayOpen)
                           setMessage('')
                         }}>
@@ -150,10 +169,12 @@ const CustomerScreen = ({ navigation, route }) => {
 
                   {item.text&&<ListItem.Content>
                     <View style={styles.titleContainer}>
-                        <ListItem.Title style={{fontSize: 16, marginRight: 5}}>{item.sender}</ListItem.Title>
+                        <ListItem.Title style={{fontSize: 16, marginRight: 5}}>{item.sender + '(' + item.fullName + ')'}</ListItem.Title>
                         <TouchableWithoutFeedback
                         onPress={()=> {
                           setReceiver(item.sender)
+                          setTitle(item.title)
+                          setFullName(item.fullName)
                           setIsMsgOverlayOpen(!isMsgOverlayOpen)
                         }}>
                           <Icon type='material' name='message' color={themes.primary} size={20}/>
@@ -188,12 +209,14 @@ const CustomerScreen = ({ navigation, route }) => {
         onBackdropPress={toggleMsgOverlay}
         overlayStyle={{width: width * 0.8}}>
         <Card>
+        <Card.Title>Reply:&nbsp;{fullName}</Card.Title>
+
           <Input
             multiline={true}
             numberOfLines={20}
             onChangeText={(text) => setMessage(text)}
             value={message}
-            label='Message'
+            placeholder='Message'
             style={{ height:100, textAlignVertical: 'top',}} 
           />
           <View>
@@ -205,7 +228,10 @@ const CustomerScreen = ({ navigation, route }) => {
                                           receiver,
                                           receiverType: 'resident',
                                           text: message,
-                                          time: Date.now().toString()
+                                          time: Date.now().toString(),
+                                          fullName: fullName,
+                                          guild: '',
+                                          title
                                                 }})
                 setIsMsgOverlayOpen(false)
             }}
@@ -225,11 +251,18 @@ const CustomerScreen = ({ navigation, route }) => {
       {/*  fetching overlay */}
       <Overlay
         visible={productRatingDataLoading||customerRatingLoading}
+        fullScreen
         >
-        <ActivityIndicator
-            color="#0000ff"
+             <View style={{height: '100%', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
+            
+            <Image source={{uri: 'https://www.animatedimages.org/data/media/106/animated-man-image-0394.gif'}} style={{width: 80, height: 80}} resizeMode='contain' />
+
+            </View>
+
+        {/* <ActivityIndicator
+            color={themes.primary}
             size='large'
-        />
+        /> */}
       </Overlay>
 
       </View>

@@ -1,8 +1,6 @@
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 
-// import ShoppingCartScreen from '../screens/vendorInterface/ShoppingCartScreen'
-// import CheckoutScreen from '../screens/vendorInterface/CheckoutScreen'
 import AccountingScreen from "../screens/accountingScreens/AccountingScreen";
 
 import themes from "../assets/themes";

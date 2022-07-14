@@ -1,5 +1,5 @@
 import React, {useState} from 'react'
-import {View, Text, StyleSheet, Dimensions, TouchableWithoutFeedback, ScrollView, DeviceEventEmitter} from 'react-native'
+import {View, Text, StyleSheet, Dimensions, TouchableWithoutFeedback, ScrollView } from 'react-native'
 import { Card, Icon, ListItem, CheckBox } from 'react-native-elements'
 import {useMutation} from '@apollo/react-hooks'
 import moment from 'moment'
@@ -25,19 +25,24 @@ const SingleOrderScreen = ({navigation, route}) => {
         return result 
       }
 
+      const formatCurrencyAmount = (value) => {
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 3, 
+      roundingIncrement: 5  }).format(value)
+      }
+
     const [changeOrderStatus] = useMutation(CHANGE_ORDER_STATUS)
     const [checked, setChecked] = useState(isFilled(order.orderItems))
     return (
         <View>
-            <Card>
-                <Card.Title>{order.orderNo}</Card.Title>
+            <Card containerStyle={{borderRadius: 5}}>
+                <Card.Title style={{fontSize: 16, color: themes.accent, fontWeight: 'bold'}}>{order.orderNo}</Card.Title>
                 <Card.Divider />
                 {/* customer */}
                 <View style={styles.customer}>
                   <Text style={{marginRight: 10}}>Customer:&nbsp;{order.resident}</Text>
-                  <TouchableWithoutFeedback>
+                  {/* <TouchableWithoutFeedback>
                   <Icon type='material' name='message' color={themes.primary} size={20}/>
-                  </TouchableWithoutFeedback>
+                  </TouchableWithoutFeedback> */}
                 </View>
                 <Card.Divider />
               {/* items */}
@@ -60,10 +65,10 @@ const SingleOrderScreen = ({navigation, route}) => {
                                 <ListItem.Subtitle style={styles.listItem}>{item.quantity.toString()}</ListItem.Subtitle>
                             </ListItem.Content>
                             <ListItem.Content>
-                                <ListItem.Subtitle style={styles.listItem}>${item.unitPrice.toFixed(2).toString()}</ListItem.Subtitle>
+                                <ListItem.Subtitle style={styles.listAmountItem}>{formatCurrencyAmount(item.unitPrice)}</ListItem.Subtitle>
                             </ListItem.Content>
                             <ListItem.Content>
-                                <ListItem.Subtitle style={styles.listItem}>${item.quantity*item.unitPrice.toFixed(2).toString()}</ListItem.Subtitle>
+                                <ListItem.Subtitle style={styles.listAmountItem}>{formatCurrencyAmount(item.quantity*item.unitPrice)}</ListItem.Subtitle>
                             </ListItem.Content>
                         </ListItem>
                         ))}
@@ -73,13 +78,13 @@ const SingleOrderScreen = ({navigation, route}) => {
                
               {/* date */}
                <View style={styles.amount}>
-                  <Text>Subtotal:&nbsp;{order.totalAmount.toFixed(2).toString()}</Text>
+                  <Text>Subtotal:&nbsp;{formatCurrencyAmount(order.totalAmount)}</Text>
                </View>
                <View style={styles.amount}>
-                   <Text>Tax:&nbsp;{order.tax.toFixed(2).toString()}</Text>
+                   <Text>Tax:&nbsp;{formatCurrencyAmount(order.tax)}</Text>
                </View>
                <View style={styles.amount}>
-                   <Text>Total:&nbsp;{(order.tax+order.totalAmount).toFixed(2).toString()}</Text>
+                   <Text>Total:&nbsp;{formatCurrencyAmount(order.tax+order.totalAmount)}</Text>
                </View>
                <Card.Divider />
                <View style={styles.date}>
@@ -110,12 +115,7 @@ const SingleOrderScreen = ({navigation, route}) => {
                         }})
                     }}
                     />
-                    </View>
-                    }
-                   
-                
-
-
+                    </View>}
             </Card>
         </View>
 
@@ -130,16 +130,16 @@ const styles = StyleSheet.create({
      marginRight: 5,
      marginVertical: 5
     },
-    card: {
-      marginHorizontal: 5,
-      marginVertical: 5,
-      width: width * 0.9,
-      height: height / 5,
-      backgroundColor: 'white',
-      borderColor: 'white',
-      borderRadius: 5,
-      paddingHorizontal: 20
-    },
+    // card: {
+    //   marginHorizontal: 5,
+    //   marginVertical: 5,
+    //   width: width * 0.9,
+    //   height: height / 5,
+    //   backgroundColor: 'white',
+    //   borderColor: 'white',
+    //   borderRadius: 5,
+    //   paddingHorizontal: 20
+    // },
     checkbox: {
         flexDirection: 'row',
         justifyContent: 'center',
@@ -164,6 +164,11 @@ const styles = StyleSheet.create({
     listItem: {
         textAlign: 'left',
         fontSize: 12
+    },
+    listAmountItem: {
+        textAlign: 'left',
+        fontSize: 12,
+        marginLeft: -20
     }
 })
 
