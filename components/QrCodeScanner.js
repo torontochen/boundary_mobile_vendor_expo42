@@ -115,7 +115,7 @@ const QrCodeScanner = (props) => {
       onPress={()=>{
         const qrInfo = {
           customerName: 'chenhaoyujcgmail',
-          silver: 30
+          silver: 30000
         }
         setQrInfo(qrInfo)
         setIsQrScannerVisible(!isQrScannerVisible)

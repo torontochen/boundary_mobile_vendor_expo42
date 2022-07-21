@@ -1,7 +1,7 @@
 import React, { useState,  useCallback } from 'react'
-import { View, Text, TouchableOpacity , ScrollView, Dimensions}  from 'react-native'
-import { Icon, Overlay, Image} from 'react-native-elements'
-import { useQuery } from '@apollo/react-hooks'
+import { View, Text, TouchableOpacity , ScrollView, Dimensions,ActivityIndicator }  from 'react-native'
+import { Icon, Overlay, Image  } from 'react-native-elements'
+import { useQuery, useLazyQuery } from '@apollo/react-hooks'
 import { LineChart } from "react-native-chart-kit"
 import moment from 'moment'
 
@@ -49,6 +49,30 @@ const ReportSceen = ({ route }) => {
 
 
      const { data: salesInfoData, loading } = useQuery(GET_VENDOR_SALES_INFO, { variables: { vendor: vendor.businessTitle }})
+     const [getVendorSalesInfo, {loading: refreshLoading}] = useLazyQuery(GET_VENDOR_SALES_INFO, {
+
+         async onCompleted({getVendorSalesInfo}){
+              console.log('getVendorSalesInfo', getVendorSalesInfo)
+          const { monthToDateSales, yearToDateSales } = getVendorSalesInfo
+          const mtd = monthToDateSales.map(item => {
+               return item.sales
+          })
+          setMonthToDateSales(mtd)
+          const mtdo = monthToDateSales.map(item => {
+               return item.orders
+          })
+          setMonthToDateOrders(mtdo)
+          const ytd = yearToDateSales.map(item => {
+               return item.sales
+          })
+          setYearToDateSales(ytd)
+          const ytdo = yearToDateSales.map(item => {
+               return item.orders
+          })
+          setYearToDateOrders(ytdo)
+         },
+         fetchPolicy: 'network-only'
+     })
     
      const formatAmount = (value) => {
           return new Intl.NumberFormat('en-US', {  maximumFractionDigits: 3, 
@@ -116,6 +140,7 @@ const ReportSceen = ({ route }) => {
 
      return (
           <View>
+               
               {salesInfoData?(
              <ScrollView contentContainerStyle={{ flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center'}}>
                {/* Daily Sales */}
@@ -127,7 +152,18 @@ const ReportSceen = ({ route }) => {
                     backgroundColor: themes.primary,
                     borderRadius: 10,
                     padding: 10}}>
-                    <View><Text style={{fontSize: 24, fontWeight: 'bold',  color: 'white',  marginVertical: 3}}>{moment(Date.now()).format("YYYY-MM-DD")}</Text></View>
+                    <View style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
+                         <Text style={{fontSize: 24, fontWeight: 'bold',  color: 'white',  marginVertical: 3}}>{moment(Date.now()).format("YYYY-MM-DD")}</Text>
+                         <Icon 
+                         name='refresh' 
+                         type='font-awesome' 
+                         color='white' 
+                         size={20} 
+                         onPress={()=>{
+                              getVendorSalesInfo({ variables: { vendor: vendor.businessTitle }})
+                         }}
+                         style={{marginHorizontal:8}}/>
+                         </View>
                     <View style={{flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', width: '100%', marginVertical: 3}}>
                          <Text style={{fontSize: 18, fontWeight:'bold', color: 'white'}}>Sales:&nbsp;{formatCurrencyAmount(salesInfoData.getVendorSalesInfo.dailySales.sales)}</Text>
                          <Text style={{fontSize: 18, fontWeight:'bold', color: 'white'}}>Orders:&nbsp;{formatAmount(salesInfoData.getVendorSalesInfo.dailySales.orders)}</Text>
@@ -451,6 +487,17 @@ const ReportSceen = ({ route }) => {
 
                     </View>
           
+               </Overlay>
+
+              {/* refresh overlay */}
+               <Overlay
+               visible={refreshLoading}
+               >
+                    
+                    <ActivityIndicator
+                    color={themes.primary}
+                    size='large'
+                    />
                </Overlay>
           </View>
      )

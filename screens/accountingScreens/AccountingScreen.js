@@ -1,12 +1,12 @@
-import React, { useState  } from 'react'
-import { View, Text,  Dimensions,  StyleSheet, FlatList, TouchableWithoutFeedback, TouchableOpacity}  from 'react-native'
-import { Icon, Overlay, Image, Card, Slider, Button, CheckBox } from 'react-native-elements'
+import React, { useState, useEffect } from 'react'
+import { View, Text,  Dimensions,  StyleSheet, FlatList,  TouchableOpacity, ActivityIndicator}  from 'react-native'
+import { Icon, Overlay, Image, Card, Slider, Button,  CheckBox} from 'react-native-elements'
 import ModalDropdown from 'react-native-modal-dropdown'
-import { useQuery } from '@apollo/react-hooks'
+import { useQuery, useLazyQuery } from '@apollo/react-hooks'
 import moment from 'moment'
 
 
-import {GET_VENDOR_SETTLEMENT_RECORDS} from "../../queries/queries_query"
+import {GET_VENDOR_SETTLEMENT_RECORDS, GET_CURRENT_VENDOR} from "../../queries/queries_query"
 import themes from '../../assets/themes'
 
 const { height, width } = Dimensions.get("window");
@@ -14,21 +14,44 @@ const { height, width } = Dimensions.get("window");
 
 
 const AccountingScreen = ({route}) => {
-    const { vendor } = route.params
+    const { currentVendor } = route.params
 
    const silverPurchaseList = ['5000', '10000', '20000', '50000', '100000', '200000', '500000', '1000000', '10000000']
 
-    const { data: settlementData, loading } = useQuery(GET_VENDOR_SETTLEMENT_RECORDS, { variables: { vendor: vendor.businessTitle }})
+    const { data: settlementData, loading } = useQuery(GET_VENDOR_SETTLEMENT_RECORDS, { variables: { vendor: currentVendor.businessTitle }})
+    const [getVendorSettlementRecords,{loading: refreshLoading}] = useLazyQuery(GET_VENDOR_SETTLEMENT_RECORDS, {
+       async onCompleted({getVendorSettlementRecords}){
+           console.log('records', getVendorSettlementRecords)
+            setRecords(getVendorSettlementRecords)
+        },
+        fetchPolicy: 'network-only'
+     })
+    const [getCurrentVendor] = useLazyQuery(GET_CURRENT_VENDOR, {
+       async onCompleted({getCurrentVendor}){
+           console.log('records', getCurrentVendor)
+            setVendor(getCurrentVendor)
+            setGold(getCurrentVendor.goldCoins)
+        },
+        fetchPolicy: 'network-only'
+     })
 
     const [creditCardCheck, setCreditCardCheck] = useState(true)
     const [isDetailsOpen, setIsDetailsOpen] = useState(false)
     const [isExchangeGoldOpen, setIsExchangeGoldOpen] = useState(false)
     const [isPurchaseSliverOpen, setIsPurchaseSliverOpen] = useState(false)
-    const [gold, setGold] = useState(vendor.goldCoins)
+    const [gold, setGold] = useState(currentVendor.goldCoins)
     const [goldToExchange, setGoldToExchange] = useState(0)
     const [paypalCheck, setPaypalCheck] = useState(false)
     const [silverToPurchase, setSilverToPurchase] = useState(0)
-    const [silver, setSilver] = useState(vendor.silverCoins)
+    const [silver, setSilver] = useState(currentVendor.silverCoins)
+    const [records, setRecords] = useState()
+    const [vendor, setVendor] = useState(currentVendor)
+
+    useEffect(()=>{
+        if(settlementData){
+            setRecords(settlementData.getVendorSettlementRecords)
+        }
+    },[settlementData])
 
     const toggleOverlay = () => {
         setIsDetailsOpen(false)
@@ -45,7 +68,7 @@ const AccountingScreen = ({route}) => {
             customerPaid += record.amountPaidByCustomer 
             boundaryCharge += record.boundaryPayable
         }
-        return {funds, customerPaid, boundaryCharge }
+        return {funds, customerPaid, boundaryCharge}
     }
 
 
@@ -104,16 +127,38 @@ const AccountingScreen = ({route}) => {
                         flexDirection:'column',
                         justifyContent: 'space-evenly',
                         alignItems: 'center'}} >
-                            <Text style={{color: 'white', fontSize: 20, fontWeight: 'bold', textAlign: 'left'}}>Customer Paid:&nbsp;
-                            {formatCurrencyAmount(settlement(settlementData.getVendorSettlementRecords).customerPaid)}</Text>
-                            <Text style={{color: 'white', fontSize: 20, fontWeight: 'bold', textAlign: 'left'}}>Boundary Charge:&nbsp;
-                            {formatCurrencyAmount(settlement(settlementData.getVendorSettlementRecords).boundaryCharge)}</Text>
-                            <Text style={{color: 'white', fontSize: 20, fontWeight: 'bold', textAlign: 'left'}}>Funds Held by Boundary:&nbsp;
-                            {formatCurrencyAmount(settlement(settlementData.getVendorSettlementRecords).funds)}</Text>
+                            <View style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
+                                <Text style={{fontSize: 24, fontWeight: 'bold',  color: 'white',  marginVertical: 3}}>{moment(Date.now()).format("YYYY-MM-DD")}</Text>
+                                <Icon 
+                                name='refresh' 
+                                type='font-awesome' 
+                                color='white' 
+                                size={20} 
+                                onPress={()=>{
+                                    getCurrentVendor()
+                                    getVendorSettlementRecords({ variables: { vendor: vendor.businessTitle }})
+                                }}
+                                style={{marginHorizontal:8}}/>
+                         </View>
+                         {records&&
+                         <Text style={{color: 'white', fontSize: 20, fontWeight: 'bold', textAlign: 'left'}}>Customer Paid:&nbsp;
+                            {formatCurrencyAmount(settlement(records).customerPaid)}</Text>
+                         }
+                         {records&&
+                        <Text style={{color: 'white', fontSize: 20, fontWeight: 'bold', textAlign: 'left'}}>Boundary Charge:&nbsp;
+                                                    {formatCurrencyAmount(settlement(records).boundaryCharge)}</Text>
+                         }
+                         {records&&
+                        <Text style={{color: 'white', fontSize: 20, fontWeight: 'bold', textAlign: 'left'}}>Funds Held by Boundary:&nbsp;
+                                                    {formatCurrencyAmount(settlement(records).funds)}</Text>
+                         }
+                            
+                          
+                            
                             <View style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center', width: '100%'}}>
                                 <Icon name="coins" type="font-awesome-5" size={25} color="yellow"></Icon>
                                 <Text style={{color: 'white', fontSize: 20, fontWeight: 'bold', textAlign: 'left', marginHorizontal: 10}}>Boundary Gold:&nbsp;{formatAmount(gold)}</Text>
-                                <Icon name="exchange" type="font-awesome" size={25} color="white" disabled={gold==0} onPress={()=>{setIsExchangeGoldOpen(true)}}></Icon>
+                                <Icon name="exchange" type="font-awesome" size={25} color="white"  disabledStyle={{color: themes.shade}} disabled={gold==0} onPress={()=>{setIsExchangeGoldOpen(true)}}></Icon>
                             </View>
                             <View style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center', width: '100%'}}>
                                 <Icon name="coins" type="font-awesome-5" size={25} color="white"></Icon>
@@ -171,7 +216,7 @@ const AccountingScreen = ({route}) => {
                             onValueChange={setGoldToExchange}
                             maximumValue={gold}
                             minimumValue={0}
-                            step={50}
+                            step={10}
                             allowTouchTrack
                             trackStyle={{ height: 5, backgroundColor: 'transparent', width: width / 5, marginHorizontal: 15}}
                             thumbStyle={{ height: 20, width: 20, backgroundColor: 'transparent' }}
@@ -213,7 +258,7 @@ const AccountingScreen = ({route}) => {
             onBackdropPress={toggleOverlay}
             overlayStyle={{width: width * 0.9, height: height * 0.4}}
             >
-                {gold&&(
+                {/* {gold>0&& */}
                     <Card>
                         <Card.Title>$1 = 1,000 Boundary Silver</Card.Title>
                         <View style={styles.silver}>
@@ -279,7 +324,7 @@ const AccountingScreen = ({route}) => {
                             checked={paypalCheck}
                             onPress={() => {setCreditCardCheck(!creditCardCheck) 
                                             setPaypalCheck(!paypalCheck)}}
-                                containerStyle={{width: width / 2.5}}                
+                            containerStyle={{width: width / 2.5}}                
                         />
                         </View>
                     <Button 
@@ -292,7 +337,7 @@ const AccountingScreen = ({route}) => {
                         buttonStyle={{backgroundColor: themes.primary}}
                         />
                     </Card>
-                )}
+                {/* } */}
         
           </Overlay>
 
@@ -307,6 +352,17 @@ const AccountingScreen = ({route}) => {
 
                     </View>
           
+               </Overlay>
+
+                {/* refresh overlay */}
+                <Overlay
+               visible={refreshLoading}
+               >
+                    
+                    <ActivityIndicator
+                    color={themes.primary}
+                    size='large'
+                    />
                </Overlay>
         </View>
     )

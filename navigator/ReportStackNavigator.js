@@ -1,7 +1,6 @@
 import React, {} from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 
-// import GuildChatScreen from "../screens/reportScreens/GuildChatScreen";
 import ReportScreen from "../screens/reportScreens/ReportScreen";
 
 import themes from "../assets/themes";

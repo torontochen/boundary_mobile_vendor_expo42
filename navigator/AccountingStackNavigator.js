@@ -16,7 +16,7 @@ const AccountingStackNavigator = ({ route }) => {
             headerTintColor: themes.primary,
           }}
         >
-            <AccountingStack.Screen name='Accounting' component={AccountingScreen} initialParams={{vendor}}/>
+            <AccountingStack.Screen name='Accounting' component={AccountingScreen} initialParams={{currentVendor: vendor}}/>
         
         </AccountingStack.Navigator>
     )}

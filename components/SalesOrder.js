@@ -212,6 +212,8 @@ const SalesOrder = (props) => {
            
         } else if(qrInfo){
             setCustomerName(qrInfo.customerName)
+            setCustomerFullName(qrInfo.customerFullName)
+
         }
         const newTitle = vendor.businessTitle.replace(/\s/g, "")
         const no = newTitle + '_' + Date.now().toString()
@@ -254,7 +256,7 @@ const SalesOrder = (props) => {
                 <Card.Divider />
                 {/* customer */}
                 <View style={styles.customer}>
-                  <Text style={{marginRight: 10}}>Customer:&nbsp;{customerName}</Text>
+                  <Text style={{marginRight: 10}}>Customer:&nbsp;{customerFullName}</Text>
                   {/* <TouchableWithoutFeedback>
                   <Icon type='material' name='message' color={themes.primary} size={20}/>
                   </TouchableWithoutFeedback> */}
@@ -402,9 +404,11 @@ const SalesOrder = (props) => {
                     {   setQrInfo()
                         setItemList([])
                         setCustomerName()
+                        setCustomerFullName()
                         setVisible(!visible)
                         setTotalDiscount(0)
                         setDealsSoughtTitle([])
+                        setOrderNo()
                     }}
                     disabled={!qrInfo}
                     
