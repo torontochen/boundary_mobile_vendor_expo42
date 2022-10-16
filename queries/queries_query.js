@@ -83,17 +83,30 @@ export const GET_CURRENT_VENDOR = gql`
   }
 `;
 
+// export const GET_CUSTOMER_RATINGS = gql`
+//   query($vendor: String) {
+//     getCustomerRatings( vendor: $vendor) {
+//         customerName
+//         customerAvatar
+//         rating
+//         comments
+//         time
+//         vendor
+//     }
+//   }`;
+
 export const GET_CUSTOMER_RATINGS = gql`
-  query($vendor: String) {
-    getCustomerRatings( vendor: $vendor) {
-        customerName
-        customerAvatar
-        rating
-        comments
-        time
-        vendor
-    }
-  }`;
+query($vendor: String) {
+  getCustomerRatings( vendor: $vendor) {
+      resident
+      customerName
+      customerAvatar
+      rating
+      comments
+      time
+      vendor
+  }
+}`;
 
 export const GET_ITEM_CATALOG = gql`
   query($subcategory: String, $businessTitle: String ) {
@@ -125,19 +138,35 @@ export const GET_PICKUP_ADDRESS = gql`
     }
   }`;
 
+// export const GET_PRODUCT_RATINGS = gql`
+//   query($vendor: String) {
+//     getProductRatings(vendor: $vendor) {
+//       customerName
+//       customerAvatar
+//       rating
+//       comments
+//       # reply
+//       time
+//       itemCode
+//       vendor
+//     }
+//   }`;
+
 export const GET_PRODUCT_RATINGS = gql`
-  query($vendor: String) {
-    getProductRatings(vendor: $vendor) {
-      customerName
-      customerAvatar
-      rating
-      comments
-      # reply
-      time
-      itemCode
-      vendor
-    }
-  }`;
+query($vendor: String) {
+  getProductRatings(vendor: $vendor) {
+
+    resident
+    customerName
+    customerAvatar
+    rating
+    comments
+    # reply
+    time
+    itemCode
+    vendor
+  }
+}`;
 
   export const GET_RESIDENT_LIST = gql`
     query{

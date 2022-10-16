@@ -379,6 +379,11 @@ console.log('vendor in orderscreen', vendor)
                 >
                   <View style={{height: '100%', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
             
+                  <Image
+                    source={require("../../assets/Screen_Shot_2022-10-14_at_11.56.26_AM-removebg-preview.png")}
+                    style={{width: 200, height: 50, alignSelf: 'center', marginBottom: 50}}
+                    resizeMode="contain"
+                    ></Image>
                   <Image source={{uri: 'https://www.animatedimages.org/data/media/106/animated-man-image-0394.gif'}} style={{width: 80, height: 80}} resizeMode='contain' />
 
                   </View>

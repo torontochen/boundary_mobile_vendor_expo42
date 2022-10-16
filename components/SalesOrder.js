@@ -51,8 +51,13 @@ const SalesOrder = (props) => {
 
     
     const formatCurrencyAmount = (value) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 3, 
-    roundingIncrement: 5  }).format(value)
+    return new Intl.NumberFormat('en-US', { 
+        style: 'currency', 
+        currency: 'USD', 
+        maximumFractionDigits: 2, 
+        minimumFractionDigits: 2,
+    // roundingIncrement: 5  
+        }).format(value)
     }
 
     // const getOrderNo = (vendorName) => {

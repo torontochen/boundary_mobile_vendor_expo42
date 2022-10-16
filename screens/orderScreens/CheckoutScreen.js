@@ -29,13 +29,18 @@ const CheckoutScreen = ({ navigation, route}) => {
     const [isQrScannerVisible, setIsQrScannerVisible] = useState(false)
 
     const formatAmount = (value) => {
-        return new Intl.NumberFormat('en-US', {  maximumFractionDigits: 3, 
+        return new Intl.NumberFormat('en-US', {  maximumFractionDigits: 0, minimumFractionDigits: 0,
           roundingIncrement: 5  }).format(value)
       }
     
       const formatCurrencyAmount = (value) => {
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 3, 
-      roundingIncrement: 5  }).format(value)
+        return new Intl.NumberFormat('en-US', { 
+            style: 'currency', 
+            currency: 'USD', 
+            maximumFractionDigits: 2, 
+            minimumFractionDigits: 2,
+    //   roundingIncrement: 5  
+        }).format(value)
       }
 
 

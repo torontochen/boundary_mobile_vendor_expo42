@@ -49,17 +49,17 @@ const CustomerScreen = ({ navigation, route }) => {
          const { getResidentList : list } = residentListData
                          
          getCustomerRatings.map((item, i, array) => {
-            const index = list.findIndex(it => it.residentName == item.customerName)
-            array[i] = {...array[i], fullName: list[index].firstName + ' ' + list[index].lastName} 
+            const index = list.findIndex(it => it.residentName == item.resident)
+            array[i] = {...array[i], fullName: item.customerName, sender: item.resident} 
         })
         getProductRatings.map((item, i, array) => {
-            const index = list.findIndex(it => it.residentName == item.customerName)
-            array[i] = {...array[i], fullName: list[index].firstName + ' ' + list[index].lastName} 
+            const index = list.findIndex(it => it.residentName == item.resident)
+            array[i] = {...array[i], fullName: item.customerName, sender: item.resident} 
         })
         // console.log('getCustomerRatings', getCustomerRatings)
         const newMessages = [...messages, ...getProductRatings, ...getCustomerRatings ]
        
-        // console.log('messages',newMessages)
+        console.log('messages',newMessages)
         setMessages(newMessages)
       }
     }, [productRatingData, customerRatingData, residentListData])
@@ -135,10 +135,10 @@ const CustomerScreen = ({ navigation, route }) => {
                   <ListItem key={i} bottomDivider style={{paddingHorizontal: 5}}>
                     {item.rating&&<ListItem.Content>
                       <View style={styles.titleContainer}>
-                        <ListItem.Title style={{fontSize: 16, marginRight: 5}}>{item.customerName + '(' + item.fullName  + ')'}</ListItem.Title>
+                        <ListItem.Title style={{fontSize: 16, marginRight: 5}}>{item.fullName}</ListItem.Title>
                         <TouchableWithoutFeedback 
                         onPress={()=> {
-                          setReceiver(item.customerName)
+                          setReceiver(item.sender)
                           setTitle(item.itemCode)
                           // console.log('residentListDta', residentListData)
                           // const { getResidentList : list } = residentListData
@@ -169,7 +169,7 @@ const CustomerScreen = ({ navigation, route }) => {
 
                   {item.text&&<ListItem.Content>
                     <View style={styles.titleContainer}>
-                        <ListItem.Title style={{fontSize: 16, marginRight: 5}}>{item.sender + '(' + item.fullName + ')'}</ListItem.Title>
+                        <ListItem.Title style={{fontSize: 16, marginRight: 5}}>{item.fullName }</ListItem.Title>
                         <TouchableWithoutFeedback
                         onPress={()=> {
                           setReceiver(item.sender)
@@ -255,6 +255,11 @@ const CustomerScreen = ({ navigation, route }) => {
         >
              <View style={{height: '100%', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
             
+            <Image
+                    source={require("../../assets/Screen_Shot_2022-10-14_at_11.56.26_AM-removebg-preview.png")}
+                    style={{width: 200, height: 50, alignSelf: 'center', marginBottom: 50}}
+                    resizeMode="contain"
+                    ></Image>
             <Image source={{uri: 'https://www.animatedimages.org/data/media/106/animated-man-image-0394.gif'}} style={{width: 80, height: 80}} resizeMode='contain' />
 
             </View>

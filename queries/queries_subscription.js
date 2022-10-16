@@ -8,7 +8,7 @@ export const CUSTOMER_RATING_ADDED = gql`
       rating
       comments
       time
-      reply
+      # reply
       vendor
     }
   }`;
@@ -34,7 +34,7 @@ export const PRODUCT_RATING_ADDED = gql`
       customerName
       customerAvatar
       comments
-      reply
+      # reply
       time
       rating
       itemCode

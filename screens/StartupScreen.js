@@ -196,7 +196,12 @@ export default function StartupScreen(props) {
                     {errMsg !== "" && <Text style={styles.errorMsg}>{errMsg}</Text>}
                 </View>
                 )}
-                <Text style={styles.title}>Boundary Vendor</Text>
+                {/* <Text style={styles.title}>Boundary Vendor</Text> */}
+                <Image
+                    source={require("../assets/Screen_Shot_2022-10-14_at_11.56.26_AM-removebg-preview.png")}
+                    style={{width: 200, height: 50, alignSelf: 'center', marginBottom: 10}}
+                    resizeMode="contain"
+                    ></Image>
               <Image source={{uri: 'https://www.animatedimages.org/data/media/106/animated-man-image-0394.gif'}} style={{width: 80, height: 80}} resizeMode='contain' />
 
                 <View style={styles.form}>

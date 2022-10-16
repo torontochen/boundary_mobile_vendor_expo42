@@ -73,13 +73,18 @@ const AccountingScreen = ({route}) => {
 
 
     const formatAmount = (value) => {
-        return new Intl.NumberFormat('en-US', {  maximumFractionDigits: 2, 
+        return new Intl.NumberFormat('en-US', {  maximumFractionDigits: 0, minimumFractionDigits: 0,
           roundingIncrement: 5  }).format(value)
       }
     
     const formatCurrencyAmount = (value) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2, 
-    roundingIncrement: 5  }).format(value)
+    return new Intl.NumberFormat('en-US', { 
+        style: 'currency', 
+        currency: 'USD', 
+        maximumFractionDigits: 2, 
+        minimumFractionDigits: 2,
+    // roundingIncrement: 5  
+        }).format(value)
     }
 
     //TODO Settlement Record Details
@@ -347,6 +352,11 @@ const AccountingScreen = ({route}) => {
                fullScreen
                >
                     <View style={{height: '100%', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
+                    <Image
+                    source={require("../../assets/Screen_Shot_2022-10-14_at_11.56.26_AM-removebg-preview.png")}
+                    style={{width: 200, height: 50, alignSelf: 'center', marginBottom: 50}}
+                    resizeMode="contain"
+                    ></Image>
                     
                         <Image source={{uri: 'https://www.animatedimages.org/data/media/106/animated-man-image-0394.gif'}} style={{width: 80, height: 80}} resizeMode='contain' />
 
