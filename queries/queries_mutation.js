@@ -10,6 +10,39 @@ export const CHANGE_ORDER_STATUS = gql`
     }
   }`;
 
+export const CONFIRM = gql`
+mutation(
+  $vendor: String, 
+  $resident: String, 
+  $orderNo: String, 
+  $content: String, 
+  $isUnderDispute: Boolean, 
+  $isConfirmed: Boolean, 
+  $isCanceled: Boolean){
+  confirm(vendor: $vendor, 
+    resident: $resident, 
+    orderNo: $orderNo, 
+    content: $content, 
+    isUnderDispute: $isUnderDispute, 
+    isConfirmed: $isConfirmed, 
+    isCanceled: $isCanceled){
+      vendor
+      resident
+      orderNo
+      content
+      isUnderDispute
+      isConfirmed
+      isCanceled
+    }
+}`;
+
+export const FULFILL = gql`
+    mutation($vendor: String, $orderNo: String, $fulfillNote: String){
+      fulfill(vendor: $vendor, orderNo: $orderNo, fulfillNote: $fulfillNote) {
+        note
+      }
+    }`;
+
 export const PLACE_ORDER = gql`
   mutation(
     $resident: String 
@@ -20,11 +53,14 @@ export const PLACE_ORDER = gql`
     $pickupAddress: String 
     $totalAmount: Float 
     $totalDiscount: Float
+    $shipping: Float
     $silverSpand: Int
     $tax: Float 
     $valueDiscountList: [ValueDiscountListInput]
     $salesOrderItems: [SalesOrderItemInput]
     $paymentMethod: String
+    $impendingOrderNo: String
+    $note: String
     $dealsTitle: [DealTitleInput]){
       placeOrder(
         resident: $resident
@@ -35,11 +71,14 @@ export const PLACE_ORDER = gql`
         pickupAddress: $pickupAddress
         totalAmount: $totalAmount
         totalDiscount: $totalDiscount
+        shipping: $shipping
         silverSpand: $silverSpand
         tax: $tax
         valueDiscountList: $valueDiscountList
         salesOrderItems: $salesOrderItems
         paymentMethod: $paymentMethod
+        impendingOrderNo: $impendingOrderNo
+        note: $note
         dealsTitle: $dealsTitle){
           date
           orderNo
@@ -51,9 +90,19 @@ export const PLACE_ORDER = gql`
           pickupAddress
           totalAmount
           totalDiscount
+          shipping
+          impending
+          finalizeInfo
+          isGameSubstitueBuy
+          isUnderDispute
+          isCanceled
+          isConfirmed
+          disputeInfo
           paymentMethod
+          note
           tax
           orderItems {
+            itemCode
             description
             quantity
             unitPrice

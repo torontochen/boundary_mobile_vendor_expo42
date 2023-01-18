@@ -119,8 +119,8 @@ const CheckoutScreen = ({ navigation, route}) => {
                 <CheckBox
                     title={
                         <Icon 
-                        name='cc-paypal'
-                        type='font-awesome-5'
+                        name='cash-multiple'
+                        type='material-community'
                         size={36}
                         style={{marginHorizontal: 3}}
                         color={themes.primary}
@@ -166,7 +166,7 @@ const CheckoutScreen = ({ navigation, route}) => {
                             totalAmount,
                             totalDiscount,
                             silverSpand: silver,
-                            paymentMethod: creditCardCheck ? 'creditcard' : 'paypal',
+                            paymentMethod: creditCardCheck ? 'creditcard' : 'cash',
                             dealsTitle,
                             salesOrderItems,
                             valueDiscountList: []
@@ -184,6 +184,7 @@ const CheckoutScreen = ({ navigation, route}) => {
                     setQrInfo={setQrInfo}
                     setIsQrScannerVisible={setIsQrScannerVisible}
                     isQrScannerVisible={isQrScannerVisible}
+                    amount={totalAmount}
                 />
             </Overlay>
         </>

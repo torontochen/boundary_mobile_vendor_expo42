@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Text, View, StyleSheet } from 'react-native';
 import {Button} from 'react-native-elements'
 import { BarCodeScanner } from 'expo-barcode-scanner';
+import themes from '../assets/themes';
 // import { Camera } from 'expo-camera';
 
 const QrCodeScanner = (props) => {
 
-  const { setQrInfo, setIsQrScannerVisible, isQrScannerVisible } = props
+  const { setQrInfo, setIsQrScannerVisible,  amount } = props
 
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
@@ -85,7 +86,7 @@ const QrCodeScanner = (props) => {
           customerFullName: 'Jack Chen'
         }
         setQrInfo(qrInfo)
-        setIsQrScannerVisible(!isQrScannerVisible)
+        setIsQrScannerVisible(false)
         // setScanned(false)
       }} 
       color='tomato'  
@@ -106,7 +107,7 @@ const QrCodeScanner = (props) => {
           flyerTitle: 'My Flyer'
         }
         setQrInfo(qrInfo)
-        setIsQrScannerVisible(!isQrScannerVisible)
+        setIsQrScannerVisible(false)
       }} 
       containerStyle={styles.button}
       />
@@ -118,10 +119,25 @@ const QrCodeScanner = (props) => {
           silver: 30000
         }
         setQrInfo(qrInfo)
-        setIsQrScannerVisible(!isQrScannerVisible)
+        setIsQrScannerVisible(false)
       }} 
+      disabled={amount==0}
       containerStyle={styles.button}
       />
+      <Button 
+      title='Exit' 
+      onPress={()=>{
+       
+        setIsQrScannerVisible(false)
+      }} 
+      buttonStyle={{backgroundColor: themes.accent}}
+      containerStyle={{
+        width: '65%', 
+        marginVertical: 20,
+        
+      }}
+      />
+
     </View>
   );
 }

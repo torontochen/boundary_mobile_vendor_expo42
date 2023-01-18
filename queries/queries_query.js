@@ -62,10 +62,13 @@ export const GET_CURRENT_VENDOR = gql`
       aboutUs
       emailVerified
       website
+      deliveryFees
+      maxDeliveryDistance
       rating
       photoList
       boundaryCharge
       crossBoundaryBusiness
+      homePageVisit
       lat
       lng
       messages {
@@ -96,17 +99,17 @@ export const GET_CURRENT_VENDOR = gql`
 //   }`;
 
 export const GET_CUSTOMER_RATINGS = gql`
-query($vendor: String) {
-  getCustomerRatings( vendor: $vendor) {
-      resident
-      customerName
-      customerAvatar
-      rating
-      comments
-      time
-      vendor
-  }
-}`;
+  query($vendor: String) {
+    getCustomerRatings( vendor: $vendor) {
+        resident
+        customerName
+        customerAvatar
+        rating
+        comments
+        time
+        vendor
+    }
+  }`;
 
 export const GET_ITEM_CATALOG = gql`
   query($subcategory: String, $businessTitle: String ) {
@@ -198,46 +201,48 @@ export const GET_SINGLE_COUPON = gql`
   }`;
 
 export const GET_SINGLE_ITEM_RATING = gql`
-query($vendor: String, $itemCode: String) {
-  getSingleItemRating ( vendor: $vendor, itemCode: $itemCode) {
-    itemCode
-    averageRating
-    customerRatings {
-      customerName
-      customerAvatar
-      rating
-      comments
-      time
-      vendor
-    }
-  }
-}`;
-
-export const GET_VENDOR_GUILD_DEALS = gql`
-  query($vendor: String!) {
-    getVendorGuildDeals(vendor: $vendor) {
-        _id
+  query($vendor: String, $itemCode: String) {
+    getSingleItemRating ( vendor: $vendor, itemCode: $itemCode) {
+      itemCode
+      averageRating
+      customerRatings {
+        resident
+        customerName
+        customerAvatar
+        rating
+        comments
+        time
         vendor
-        vendorLogo
-        guildDealType
-        dealRedeemTerm
-        specificItemList
-        guildDealLevels {
-            guildDealCondition
-            guildDealAmount
-            rewardItemsSelected
-            rewardAmount
-        }
-        dateFrom
-        dateTo
-        active
-        dealNo
-        dealFulfillmentRecords{
-          guild
-          purchaseAmount
-        }
       }
-    }`;
+    }
+  }`;
+
+// export const GET_VENDOR_GUILD_DEALS = gql`
+//   query($vendor: String!) {
+//     getVendorGuildDeals(vendor: $vendor) {
+//         _id
+//         vendor
+//         vendorLogo
+//         vendorCategory
+//         guildDealType
+//         dealRedeemTerm
+//         specificItemList
+//         guildDealLevels {
+//             guildDealCondition
+//             guildDealAmount
+//             rewardItemsSelected
+//             rewardAmount
+//         }
+//         dateFrom
+//         dateTo
+//         active
+//         dealNo
+//         dealFulfillmentRecords{
+//           guild
+//           purchaseAmount
+//         }
+//       }
+//     }`;
 
 export const GET_VENDOR_ORDERS = gql`
 query($vendor: String) {
@@ -247,6 +252,7 @@ query($vendor: String) {
       tax
       totalAmount
       totalDiscount
+      shipping
       deliveryType
       customerName
       deliveryAddress
@@ -254,16 +260,23 @@ query($vendor: String) {
       resident
       vendor
       paymentMethod
+      isUnderDispute
+      isCanceled
+      isConfirmed
+      disputeInfo
+      note
+      isFulfilled
+      fulfillNote
       orderItems {
         itemCode
         description
         quantity
         unitPrice
-        taxRate
-        isFulfilled
+        taxRate       
       }
   }
 }`;
+
 
 export const GET_VENDOR_SALES_INFO = gql`
   query($vendor: String){
@@ -316,16 +329,20 @@ export const GET_VENDOR_SETTLEMENT_RECORDS = gql`
   }`
 
 export const SEARCH_AVAILABLE_DEALS = gql`
-query($input: DealSearchInput){
-  searchAvailableDeals(input: $input) {
-    flyerId
-    couponId
-    valueType
-    amount
-    itemCode
-    couponTitle
-    flyerTitle
-  }
-}`;
+  query($input: DealSearchInput){
+    searchAvailableDeals(input: $input) {
+      flyerId
+      couponId
+      valueType
+      amount
+      itemCode
+      couponTitle
+      flyerTitle
+      isForExceedance
+      isForAllItems
+      minimalAmount
+      minimalQty
+    }
+  }`;
 
 

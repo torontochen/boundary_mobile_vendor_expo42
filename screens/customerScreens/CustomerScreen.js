@@ -39,6 +39,7 @@ const CustomerScreen = ({ navigation, route }) => {
     const { data: productRatingData, loading: productRatingDataLoading } = useQuery(GET_PRODUCT_RATINGS, {variables:{vendor:vendorData.businessTitle}} )
     const { data: customerRatingData, loading: customerRatingLoading } = useQuery(GET_CUSTOMER_RATINGS, {variables:{vendor:vendorData.businessTitle}} )
     const { data: residentListData } = useQuery(GET_RESIDENT_LIST)
+    
     useEffect(() => {
       if(productRatingData&&customerRatingData) {
         const {  messages } = vendorData
@@ -60,7 +61,7 @@ const CustomerScreen = ({ navigation, route }) => {
         const newMessages = [...messages, ...getProductRatings, ...getCustomerRatings ]
        
         console.log('messages',newMessages)
-        setMessages(newMessages)
+        setMessages(_.orderBy(newMessages, ['time'], ['desc']))
       }
     }, [productRatingData, customerRatingData, residentListData])
 
@@ -94,7 +95,7 @@ const CustomerScreen = ({ navigation, route }) => {
         if(vendor==vendorData.businessTitle) {
           const messageList = [...messages]
           messageList.push(customerRatingAdded)
-          setMessages(messageList)
+          setMessages(_.orderBy(messageList, ['time'], ['desc']))
         }
       }
     })
@@ -106,7 +107,8 @@ const CustomerScreen = ({ navigation, route }) => {
         if(vendor==vendorData.businessTitle) {
           const messageList = [...messages]
           messageList.push(productRatingAdded)
-          setMessages(messageList)
+          setMessages(_.orderBy(messageList, ['time'], ['desc']))
+
         }
       }
     })
@@ -118,7 +120,8 @@ const CustomerScreen = ({ navigation, route }) => {
         if(receiver == vendorData.businessTitle && receiverType == 'vendor') {
           const messageList = [...messages]
           messageList.push(messageReceived)
-          setMessages([...messageList])
+          setMessages(_.orderBy(messageList, ['time'], ['desc']))
+
         }
       }
     })
@@ -126,6 +129,7 @@ const CustomerScreen = ({ navigation, route }) => {
 
     
     return (
+
       <View style={{flex: 1}}>
         {/* messages */}
          <ScrollView style={{height: height * 2}} >
@@ -179,6 +183,7 @@ const CustomerScreen = ({ navigation, route }) => {
                         }}>
                           <Icon type='material' name='message' color={themes.primary} size={20}/>
                         </TouchableWithoutFeedback>
+                        <Text style={{color: themes.accent, fontSize: 12}}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{item.title}</Text>
                       </View>
 
                       <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '80%', fontSize: 8}}>
@@ -195,6 +200,13 @@ const CustomerScreen = ({ navigation, route }) => {
             }
         </ScrollView> 
      
+        {!messages&&
+        (  <View style={{height: '100%', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
+            
+        {/* 150*/}
+        <Image source={{uri: 'https://www.animatedimages.org/data/media/1802/animated-office-worker-image-0058.gif'}} style={{width: 150, height: 150}} resizeMode='contain' />
+
+        </View>)}
     {/* <FAB
           visible={visible}
           icon={{ name: 'add', color: 'white' }}
@@ -209,7 +221,7 @@ const CustomerScreen = ({ navigation, route }) => {
         onBackdropPress={toggleMsgOverlay}
         overlayStyle={{width: width * 0.8}}>
         <Card>
-        <Card.Title>Reply:&nbsp;{fullName}</Card.Title>
+        <Card.Title>Reply:&nbsp;{fullName}&nbsp;{title}</Card.Title>
 
           <Input
             multiline={true}
@@ -269,6 +281,8 @@ const CustomerScreen = ({ navigation, route }) => {
             size='large'
         /> */}
       </Overlay>
+
+      
 
       </View>
     )

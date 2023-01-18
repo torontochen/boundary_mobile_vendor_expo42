@@ -220,9 +220,12 @@ const SalesOrder = (props) => {
             setCustomerFullName(qrInfo.customerFullName)
 
         }
-        const newTitle = vendor.businessTitle.replace(/\s/g, "")
+        if(qrInfo) {
+             const newTitle = vendor.businessTitle.replace(/\s/g, "")
         const no = newTitle + '_' + Date.now().toString()
         setOrderNo(no)
+        }
+       
     }, [qrInfo])
     
     return (
@@ -429,6 +432,7 @@ const SalesOrder = (props) => {
                     setQrInfo={setQrInfo}
                     setIsQrScannerVisible={setIsQrScannerVisible}
                     isQrScannerVisible={isQrScannerVisible}
+                    amount={amount}
                 />
             </Overlay>
 

@@ -163,7 +163,14 @@ const AccountingScreen = ({route}) => {
                             <View style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center', width: '100%'}}>
                                 <Icon name="coins" type="font-awesome-5" size={25} color="yellow"></Icon>
                                 <Text style={{color: 'white', fontSize: 20, fontWeight: 'bold', textAlign: 'left', marginHorizontal: 10}}>Boundary Gold:&nbsp;{formatAmount(gold)}</Text>
-                                <Icon name="exchange" type="font-awesome" size={25} color="white"  disabledStyle={{color: themes.shade}} disabled={gold==0} onPress={()=>{setIsExchangeGoldOpen(true)}}></Icon>
+                                <Icon 
+                                name="exchange" 
+                                type="font-awesome" 
+                                size={25} 
+                                color={gold==0 ? themes.shade4 : "white"}  
+                                disabledStyle={{backgroundColor: "white"}} 
+                                disabled={gold==0} 
+                                onPress={()=>{setIsExchangeGoldOpen(true)}}></Icon>
                             </View>
                             <View style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center', width: '100%'}}>
                                 <Icon name="coins" type="font-awesome-5" size={25} color="white"></Icon>

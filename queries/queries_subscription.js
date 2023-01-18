@@ -28,6 +28,19 @@ export const MESSAGE_RECEIVED = gql`
     }
   }`;
 
+export const ORDER_STATUS_CHANGED = gql`
+subscription{
+  orderStatusChanged{
+    resident
+    vendor
+    orderNo
+    content
+    isConfirmed
+    isCanceled
+    isUnderDispute
+  }
+}`;
+
 export const PRODUCT_RATING_ADDED = gql`
   subscription{
     productRatingAdded{
@@ -50,6 +63,7 @@ export const VENDOR_ORDER_ADDED = gql`
       tax
       totalAmount
       totalDiscount
+      shipping
       deliveryType
       customerName
       deliveryAddress
@@ -57,25 +71,32 @@ export const VENDOR_ORDER_ADDED = gql`
       resident
       vendor
       paymentMethod
+      isUnderDispute
+      isCanceled
+      isConfirmed
+      disputeInfo
+      note
+      isFulfilled
+      fulfillNote
       orderItems {
         itemCode
         description
         quantity
         unitPrice
         taxRate
-        isFulfilled
+        
       }
     }
   }`;
 
-export const VENDOR_ORDER_STATUS_CHANGED = gql`
-subscription{
-  vendorOrderStatusChanged{
-    vendor
-    orderNo
-    status
-  }
-}`;
+// export const VENDOR_ORDER_STATUS_CHANGED = gql`
+// subscription{
+//   vendorOrderStatusChanged{
+//     vendor
+//     orderNo
+//     status
+//   }
+// }`;
 
 
 

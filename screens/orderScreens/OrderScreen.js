@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { View, Text, StyleSheet, ActivityIndicator, TouchableWithoutFeedback, Dimensions, Image,
+import { View, Text, StyleSheet, ActivityIndicator, TouchableWithoutFeedback, Dimensions, 
     Keyboard  } from 'react-native'
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { Tab, TabView, Overlay, Input, Button, Icon, Avatar} from 'react-native-elements'
-import { useQuery, useMutation, useLazyQuery } from '@apollo/react-hooks'
+import { Tab, TabView, Overlay, Input, Button, Icon, Avatar, Image} from 'react-native-elements'
+import { useQuery, useMutation, useLazyQuery, useSubscription } from '@apollo/react-hooks'
 import Menu, { MenuItem, MenuDivider } from "react-native-material-menu";
 
 import { GET_AUTH, 
@@ -17,6 +17,7 @@ import { GET_AUTH,
   GET_VENDOR_SETTLEMENT_RECORDS
  } from '../../queries/queries_query'
 import { SIGNIN_VENDOR, SET_AUTH_ERROR, SET_AUTH } from '../../queries/queries_mutation'
+import { ORDER_STATUS_CHANGED, VENDOR_ORDER_ADDED, MESSAGE_RECEIVED } from '../../queries/queries_subscription';
 import CustomerOrders  from '../../components/CustomerOrders'
 import themes from "../../assets/themes";
 import SalesOrder from '../../components/SalesOrder';
@@ -33,6 +34,7 @@ console.log('vendor in orderscreen', vendor)
     const [password, setPassword] = useState("");
     const [email, setEmail] = useState("");
     const [vendorOrders, setVendorOrders] = useState()
+    const [vendorSettlement, setVendorSettlement] = useState()
     const [vendor, setVendor] = useState()
 
     const { data: authData } = useQuery(GET_AUTH)
@@ -45,13 +47,51 @@ console.log('vendor in orderscreen', vendor)
     //     setIsAuthed(isAuthed)
     // }, [authData])
 
-    const { data: vendorData } = useQuery(GET_CURRENT_VENDOR)
+    const { data: vendorData, loading: vendorLoading } = useQuery(GET_CURRENT_VENDOR)
 
     const [getVendorOrders, { data: orderData, loading }] = useLazyQuery(GET_VENDOR_ORDERS)
-    const [getItemCatalog, {data: catalogData, catalogLoading}] = useLazyQuery(GET_ITEM_CATALOG)
+    const [getItemCatalog, {data: catalogData, loading: catalogLoading}] = useLazyQuery(GET_ITEM_CATALOG)
     const [ getVendorSalesInfo ] = useLazyQuery(GET_VENDOR_SALES_INFO)
-    const [getResidentList] = useLazyQuery(GET_RESIDENT_LIST)
-    const [getVendorSettlementRecords] = useLazyQuery(GET_VENDOR_SETTLEMENT_RECORDS)
+    const [getResidentList, {loading: residentListLoading}] = useLazyQuery(GET_RESIDENT_LIST)
+    const [getVendorSettlementRecords, { data: settlementData, loading: settlementLoading}] = useLazyQuery(GET_VENDOR_SETTLEMENT_RECORDS)
+
+    useSubscription(ORDER_STATUS_CHANGED, {
+      onSubscriptionData({subscriptionData}) {
+        const { data: { orderStatusChanged }} = subscriptionData
+        //  console.log('vendorOrderStatusChanged',vendorOrderStatusChanged)
+        const { vendor: orderVendor, resident, orderNo, content, isUnderDispute, isConfirmed, isCanceled } = orderStatusChanged
+
+        if(vendor==orderVendor) {
+          const index = vendorOrders.findIndex(order => order.orderNo == orderNo )
+          if(index >= 0) {
+            const orderList = [...vendorOrders]
+            orderList[index].isCanceled = isCanceled
+            orderList[index].isUnderDispute = isUnderDispute
+            orderList[index].isConfirmed = isConfirmed
+            orderList[index].disputeInfo = content
+            
+            setVendorOrders(orderList)
+          }       
+          // setChanged(!changed)
+          
+        }
+         
+      }
+  })
+
+  useSubscription(VENDOR_ORDER_ADDED, {
+      onSubscriptionData({subscriptionData}) {
+        const { data: { vendorOrderAdded }} = subscriptionData
+        // console.log('vendorOrderAdded', vendorOrderAdded)
+        if(vendor==vendorOrderAdded.vendor) {
+          // const newOrders = [...orders]
+          // newOrders.push(vendorOrderAdded)
+          const orderList = [...vendorOrders]
+          orderList.push(vendorOrderAdded)
+          setVendorOrders(orderList)
+        }
+      }
+  })
 
 
     const hideMenu = () => {
@@ -107,12 +147,12 @@ console.log('vendor in orderscreen', vendor)
                 ref={rightIcon}
                 style={{ marginTop: 38 }}
                 button={
-                  <Avatar
-                    rounded
+                  <Image
+                  resizeMode="contain"
                     source={{
                       uri: vendorData.getCurrentVendor.logo,
                     }}
-                    size={30}
+                    style={{width:45, height: 45}}
                     onPress={() => showMenu()}
                     containerStyle={{ marginRight: 28, marginBottom: 7 }}
                   />
@@ -208,6 +248,15 @@ console.log('vendor in orderscreen', vendor)
       }
         
     }, [orderData, loading])
+
+    useEffect(() => {
+      if(settlementData) {
+        // console.log('orders', orderData)
+        const { getVendorSettlementRecords } = settlementData
+        setVendorSettlement(getVendorSettlementRecords)
+      }
+        
+    }, [settlementData, settlementLoading])
 
     const [setAuth] = useMutation(SET_AUTH,{
       refetchQueries:[{query: GET_CURRENT_VENDOR}],
@@ -348,7 +397,13 @@ console.log('vendor in orderscreen', vendor)
                   style={{ backgroundColor: 'white', width: '100%' }  } 
                   onMoveShouldSetResponder={(e) => e.stopPropagation()}
                 >
-                 {vendor&&vendorOrders&&<CustomerOrders orders={vendorOrders} navigation={navigation} vendor={vendor.businessTitle}/>}
+                 {
+                 vendorData&&orderData&&vendorSettlement&&
+                 <CustomerOrders 
+                 vendorOrders={orderData.getVendorOrders} 
+                 navigation={navigation} 
+                 vendor={vendorData.getCurrentVendor.businessTitle} 
+                 settlementRecords= {settlementData.getVendorSettlementRecords}/>}
                 </TabView.Item>
 
                 {/* <TabView.Item style={{ backgroundColor: 'blue', width: '100%' }}>
@@ -374,7 +429,7 @@ console.log('vendor in orderscreen', vendor)
                 
              {/* vendor interface loading overlay */}
                 <Overlay
-                visible={loading || catalogData == null}
+                visible={loading || vendorLoading || residentListLoading || catalogLoading || settlementLoading }
                 fullScreen
                 >
                   <View style={{height: '100%', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>

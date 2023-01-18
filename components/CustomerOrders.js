@@ -3,10 +3,11 @@ import { View, StyleSheet, FlatList, TouchableOpacity, Dimensions, TouchableWith
 import { Card, Text, Icon, Overlay, Input, Button } from 'react-native-elements'
 import { useSubscription, useMutation } from '@apollo/react-hooks'
 import moment from 'moment';
+import _ from 'lodash'
 
 import themes from '../assets/themes';
-import { VENDOR_ORDER_STATUS_CHANGED, VENDOR_ORDER_ADDED } from '../queries/queries_subscription';
-import { SEND_MESSAGE } from '../queries/queries_mutation'
+import { ORDER_STATUS_CHANGED, VENDOR_ORDER_ADDED, VENDOR_SETTLEMENT_RECORD_ADDED } from '../queries/queries_subscription';
+import { SEND_MESSAGE, FULFILL, CONFIRM } from '../queries/queries_mutation'
 
 
 const { height, width } = Dimensions.get("window");
@@ -14,16 +15,22 @@ const { height, width } = Dimensions.get("window");
 
 
 const CustomerOrders = (props) => {
-    const { orders, navigation, vendor } = props
+    const { vendorOrders, navigation, vendor, settlementRecords } = props
     
-    // console.log('orders', orders)
+    console.log('orders in customer orders', vendorOrders)
     // const [items, setItems] = useState()
+    const [orders, setOrders] = useState(_.orderBy(vendorOrders, ['date'], ['desc']))
+    const [records, setRecords] = useState(settlementRecords)
     const [receiver, setReceiver] = useState()
     const [title, setTitle] = useState()
     const [fullName, setFullName] = useState()
     const [message, setMessage] = useState('')
     const [isMsgOverlayOpen, setIsMsgOverlayOpen] = useState(false)
     const [changed, setChanged] = useState(false)
+    const [orderToFulfill, setOrderToFulfill] = useState()
+    const [isFulfillOrderOpen, setIsFulfillOrderOpen] = useState(false)
+    const [fulfillNote, setFulfillNote] = useState('')
+    
 
     // useEffect(()=>{
     //   if(orders) {
@@ -39,15 +46,15 @@ const CustomerOrders = (props) => {
     
    
 
-     const isOpen = (items) => {
-      let result = false
-      // console.log('items', items)
-      for ( let singleItem of items ) {
-        result = singleItem.isFulfilled 
-        if (result) break 
-      }
-      return result ? 'No' : 'Yes'
-    }
+    //  const isOpen = (items) => {
+    //   let result = false
+    //   // console.log('items', items)
+    //   for ( let singleItem of items ) {
+    //     result = singleItem.isFulfilled 
+    //     if (result) break 
+    //   }
+    //   return result ? 'No' : 'Yes'
+    // }
 
     const formatCurrencyAmount = (value) => {
       return new Intl.NumberFormat('en-US', { 
@@ -61,30 +68,35 @@ const CustomerOrders = (props) => {
 
     const toggleMsgOverlay = () => {
       setMessage('')
-      setIsMsgOverlayOpen(!isMsgOverlayOpen)
+      setIsMsgOverlayOpen(false)
+      setIsFulfillOrderOpen(false)
      };
 
     const [sendMessage] = useMutation(SEND_MESSAGE)
+    const [fulfill] = useMutation(FULFILL)
+    const [confirm] = useMutation(CONFIRM)
 
 
-    useSubscription(VENDOR_ORDER_STATUS_CHANGED, {
+    useSubscription(ORDER_STATUS_CHANGED, {
       onSubscriptionData({subscriptionData}) {
-         const { data: { vendorOrderStatusChanged }} = subscriptionData
+        const { data: { orderStatusChanged }} = subscriptionData
         //  console.log('vendorOrderStatusChanged',vendorOrderStatusChanged)
-        if(vendor==vendorOrderStatusChanged.vendor) {
-          const index = orders.findIndex(order => order.orderNo == vendorOrderStatusChanged.orderNo )
-          for(let item of orders[index].orderItems) {
-            item.isFulfilled = vendorOrderStatusChanged.status
-          }
-          // console.log('items',items)
-          // const newItems = [...items]
-          // const indexItem = newItems.findIndex(item => item.orderNo == vendorOrderStatusChanged.orderNo )
-          // for(let item of newItems[indexItem]) {
-          //   item.isFulfilled = vendorOrderStatusChanged.status
-          // }
-          setChanged(!changed)
-          // setExistingOrders(orders)
-          // console.log('orders in subscription', orders)
+        const { vendor: orderVendor, resident, orderNo, content, isUnderDispute, isConfirmed, isCanceled } = orderStatusChanged
+
+        if(vendor==orderVendor) {
+          const index = orders.findIndex(order => order.orderNo == orderNo )
+          if(index >= 0) {
+            const orderList = [...orders]
+            orderList[index].isCanceled = isCanceled
+            orderList[index].isUnderDispute = isUnderDispute
+            orderList[index].isConfirmed = isConfirmed
+            orderList[index].disputeInfo = content
+            
+            setOrders(orderList)
+            setChanged(!changed)
+          }       
+          
+          
         }
          
       }
@@ -97,7 +109,24 @@ const CustomerOrders = (props) => {
         if(vendor==vendorOrderAdded.vendor) {
           // const newOrders = [...orders]
           // newOrders.push(vendorOrderAdded)
-          orders.push(vendorOrderAdded)
+          const orderList = [...orders]
+          orderList.push(vendorOrderAdded)
+          setOrders(_.orderBy(orderList, ['date'], ['desc']))
+        }
+      }
+  })
+
+
+  useSubscription(VENDOR_SETTLEMENT_RECORD_ADDED, {
+      onSubscriptionData({subscriptionData}) {
+        const { data: { vendorSettlementRecordAdded }} = subscriptionData
+        // console.log('vendorOrderAdded', vendorOrderAdded)
+        if(vendor==vendorSettlementRecordAdded.vendor) {
+          // const newOrders = [...orders]
+          // newOrders.push(vendorOrderAdded)
+          const list = [...records]
+          list.push(vendorSettlementRecordAdded)
+          setRecords(list)
         }
       }
   })
@@ -106,9 +135,12 @@ const CustomerOrders = (props) => {
   const renderItems = ({ item, i }) => {
     
     return (
+      
     <TouchableOpacity
       onPress={()=>{
-       navigation.navigate('SingleOrder', { order: item, vendor })
+        const index = settlementRecords.findIndex(record => record.salesOrderNo == item.orderNo)
+
+       navigation.navigate('SingleOrder', { order: item, vendor, record: settlementRecords[index] })
       }}
     >
         <Card containerStyle={styles.card}>
@@ -133,12 +165,67 @@ const CustomerOrders = (props) => {
               {/* amount */}
                <View style={styles.content}>
                  <Text>Items:&nbsp;{item.orderItems.length.toString()}</Text>
-                 <Text>Amount:&nbsp;{formatCurrencyAmount(item.totalAmount)}</Text>
+                 <Text>Amount:&nbsp;{formatCurrencyAmount((item.totalAmount + item.shipping) * 1.13)}</Text>
                </View>
+
+               {/* Confirm and Fulfill */}
+                   <View style={styles.checkbox}> 
+                    <Button 
+                    size={10} 
+                    type='clear'
+                    buttonStyle={{color: themes.secondary}}
+                    title={item.isConfirmed?'CONFIRMED':'Confirm'}
+                    // disabledStyle={{ backgroundColor: "#ECEFF1"}}
+                    titleStyle={{fontSize: 11, color: themes.primary}}
+
+                    disabledTitleStyle={{color: themes.fontColor }}
+                    disabled={item.isCanceled||item.isConfirmed}
+                    onPress={()=> {
+                      const index = orders.findIndex(order => item.orderNo == order.orderNo)
+                      const orderList = [...orders]
+                      orderList[index].isConfirmed = !orderList[index].isConfirmed
+                      setOrders(orderList)
+                        confirm({ variables: {
+                          vendor: item.vendor,
+                          resident: item.resident,
+                          orderNo: item.orderNo,
+                          content: '',
+                          isUnderDispute: item.isUnderDispute,
+                          isConfirmed: true,
+                          isCanceled: item.isCanceled
+                        }})
+                    }}
+                    />
+                    <Button
+                    size={10} 
+                    type='clear'
+                    buttonStyle={{color: themes.secondary}}
+                    title={item.isFulfilled?'FULFILLED':'fulfill'} 
+                    // disabledStyle={{ backgroundColor: "#ECEFF1"}}
+                    titleStyle={{fontSize: 11, color: themes.primary}}
+                    disabledTitleStyle={{color: themes.fontColor }}
+                    disabled={item.isFulfilled||item.isCanceled}
+                    onPress={()=> {
+                      setOrderToFulfill(item)
+                      setIsFulfillOrderOpen(true)
+                    }}
+                    />
+                    </View>
+
+              {/* Order Status */}
+                    {/* <View >
+                    <v-btn text plain x-small color="accent" class="mx-2" v-if="item.isUnderDispute">Disputed</v-btn>
+                    <v-btn text plain x-small  class="mx-2" color="accent" v-if="item.isCanceled">Canceled</v-btn>
+                    </View> */}
               {/* date */}
                <View style={styles.content}>
                  <Text>Date:&nbsp;{moment(new Number(item.date)).format('YYYY-MM-DD HH:mm')}</Text>
-                 <Text>Open:&nbsp;{isOpen(item.orderItems)}</Text>
+                 {item.isUnderDispute&&
+                  <Text style={{color: themes.accent, fontSize: 10}}>DISPUTED</Text>
+                 }
+                 {item.isCanceled&&
+                  <Text style={{color: themes.accent, fontSize: 10}}>CANCELED</Text>
+                 }
                </View>
 
              
@@ -148,8 +235,9 @@ const CustomerOrders = (props) => {
   )};
 
     return (
+      
         <View style={{justifyContent: 'flex-start', alignItems: 'center', height: '100%', }}>
-          {orders.length>0&&
+          {orders&&records&&
           <FlatList 
                data={orders}
                renderItem={renderItems}
@@ -171,13 +259,14 @@ const CustomerOrders = (props) => {
                 </View>)
             }
           
-           {/* message overlay */}
+      {/* message overlay */}
       <Overlay 
         isVisible={isMsgOverlayOpen} 
         onBackdropPress={toggleMsgOverlay}
         overlayStyle={{width: width * 0.8}}>
         <Card>
           <Card.Title>Reply:&nbsp;{fullName}</Card.Title>
+
           <Input
             multiline={true}
             numberOfLines={20}
@@ -203,7 +292,8 @@ const CustomerOrders = (props) => {
             }}
             title="Ok"
             disabled={!message}
-            disabledStyle={{ backgroundColor: "#ECEFF1", color: "#ECEFF1" }}
+            disabledStyle={{ backgroundColor: "#ECEFF1"}}
+            disabledTitleStyle={{color: "#ECEFF1" }}
             buttonStyle={{
                 backgroundColor: themes.primary,
                 marginHorizontal: 10,
@@ -213,7 +303,55 @@ const CustomerOrders = (props) => {
           </View>
         </Card>
       </Overlay>
-            
+
+
+      {/* Fulfill order */}
+      {orderToFulfill&&
+       <Overlay 
+        isVisible={isFulfillOrderOpen} 
+        onBackdropPress={toggleMsgOverlay}
+        overlayStyle={{width: width * 0.8}}>
+        <Card>
+          <Card.Title>Order:&nbsp;{orderToFulfill.orderNo}</Card.Title>
+          <Input
+            multiline={true}
+            numberOfLines={20}
+            onChangeText={(text) => setFulfillNote(text)}
+            value={fulfillNote}
+            placeholder='leave a note'
+            style={{ height:100, textAlignVertical: 'top',}} 
+          />
+          <View>
+          <Button
+            icon={{ name: "done", type: "material", color: "white" }}
+            iconRight
+            onPress={() => {
+              const index = orders.findIndex(order => orderToFulfill.orderNo == order.orderNo)
+              const orderList = [...orders]
+              orderList[index].isFulfilled = !orderList[index].isFulfilled
+              setOrders(orderList)
+               fulfill({variables:{
+                vendor: orderToFulfill.vendor,
+                orderNo: orderToFulfill.orderNo,
+                fulfillNote
+              }})
+              setIsFulfillOrderOpen(false)
+            }}
+            title="Ok"
+            disabled={!fulfillNote}
+            disabledStyle={{ backgroundColor: "#ECEFF1"}}
+            disabledTitleStyle={{color: "#ECEFF1" }}
+            buttonStyle={{
+                backgroundColor: themes.primary,
+                marginHorizontal: 10,
+                width: '90%'
+            }}
+            />
+          </View>
+        </Card>
+      </Overlay>
+      }
+     
         </View>
     )
 }
@@ -234,6 +372,11 @@ const styles = StyleSheet.create({
        shadowOffset: { width: 0, height: 1 },
       paddingHorizontal: 1
     },
+    checkbox: {
+      flexDirection: 'row',
+      justifyContent: 'space-evenly',
+      alignItems: 'center'
+  },
     content: {
         flexDirection: 'row',
         justifyContent: 'space-around',

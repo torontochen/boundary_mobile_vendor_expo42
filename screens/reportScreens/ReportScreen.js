@@ -420,8 +420,8 @@ const ReportSceen = ({ route }) => {
             <View style={{flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', flexWrap: 'wrap', width: '100%', height: '100%'}}>
               {monthToDateSales&&monthToDateSales.map((item, i) => {
                    return <View  key={i} style={{width: width * 1 / 5.3, height: height * 0.085, flexDirection: 'column', justifyContent: 'center', alignItems: 'center', margin: 1 }}>
-                              <Text style={{marginVertical: 2}}>{(i+1).toString()}</Text>
-                              <Text style={{marginVertical: 2}}>{formatCurrencyAmount(item)}</Text>
+                              <Text style={{marginVertical: 2, color: themes.accent}}>{(i+1).toString()}</Text>
+                              <Text style={{marginVertical: 2, color: themes.fontColor}}>{formatCurrencyAmount(item)}</Text>
                          </View>
               })}
             </View>
@@ -438,8 +438,8 @@ const ReportSceen = ({ route }) => {
             <View style={{flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', flexWrap: 'wrap', width: '100%', height: '100%'}}>
               {monthToDateOrders&&monthToDateOrders.map((item, i) => {
                    return <View key={i} style={{width: width * 1 / 5.3, height: height * 0.085, flexDirection: 'column', justifyContent: 'center', alignItems: 'center', margin: 1 }}>
-                              <Text style={{marginVertical: 2}}>{(i+1).toString()}</Text>
-                              <Text style={{marginVertical: 2}}>{formatAmount(item)}</Text>
+                              <Text style={{marginVertical: 2, color: themes.accent}}>{(i+1).toString()}</Text>
+                              <Text style={{marginVertical: 2, color: themes.fontColor}}>{formatAmount(item)}</Text>
                          </View>
               })}
             </View>
@@ -456,8 +456,8 @@ const ReportSceen = ({ route }) => {
             <View style={{flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', flexWrap: 'wrap', width: '100%', height: '100%'}}>
               {yearToDateSales&&yearToDateSales.map((item, i) => {
                    return <View  key={i} style={{width: width * 1 / 4, height: height * 0.085, flexDirection: 'column', justifyContent: 'center', alignItems: 'center', margin: 1 }}>
-                              <Text style={{marginVertical: 2}}>{month[i]}</Text>
-                              <Text style={{marginVertical: 2}}>{formatCurrencyAmount(item)}</Text>
+                              <Text style={{marginVertical: 2, color: themes.accent}}>{month[i]}</Text>
+                              <Text style={{marginVertical: 2, color: themes.fontColor}}>{formatCurrencyAmount(item)}</Text>
                          </View>
               })}
             </View>
@@ -474,8 +474,8 @@ const ReportSceen = ({ route }) => {
             <View style={{flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', flexWrap: 'wrap', width: '100%', height: '100%'}}>
               {yearToDateOrders&&yearToDateOrders.map((item, i) => {
                    return <View  key={i} style={{width: width * 1 / 5, height: height * 0.085, flexDirection: 'column', justifyContent: 'center', alignItems: 'center', margin: 1 }}>
-                              <Text style={{marginVertical: 2}}>{month[i]}</Text>
-                              <Text style={{marginVertical: 2}}>{formatAmount(item)}</Text>
+                              <Text style={{marginVertical: 2, color: themes.accent}}>{month[i]}</Text>
+                              <Text style={{marginVertical: 2, color: themes.fontColor}}>{formatAmount(item)}</Text>
                          </View>
               })}
             </View>
