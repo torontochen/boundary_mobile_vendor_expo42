@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react'
-import {View, Text, StyleSheet, Dimensions, ScrollView, ActivityIndicator, Alert} from 'react-native'
+import {View, Text, StyleSheet, Dimensions, ScrollView, ActivityIndicator, Alert, DeviceEventEmitter} from 'react-native'
 import { Card, Icon, ListItem, Overlay, SpeedDial, Input , Button, FAB, Image} from 'react-native-elements'
 import {useMutation, useQuery, useLazyQuery} from '@apollo/react-hooks'
 import moment from 'moment'
@@ -77,12 +77,29 @@ const SalesOrder = (props) => {
     //         return subTotal
     // }
 
-    
+    useEffect(()=>{
+        DeviceEventEmitter.addListener('salesOrderDone', value=>{
+            setQrInfo()
+            setItemList([])
+            setCustomerName()
+            setCustomerFullName()
+            setVisible(false)
+            setTotalDiscount(0)
+            setDealsSoughtTitle([])
+            setOrderNo()
+        })
+      return () => {
+        DeviceEventEmitter.removeListener('salesOrderDone')
+      }
+    },[])
+
+
     useEffect(()=>{
         if(itemList) {
             let subTotal = 0
             for (let item of itemList) {
-                subTotal = subTotal + Number(item.quantity) * (item.dealPrice > 0 ? item.dealPrice : item.unitPrice)
+                // subTotal = subTotal + Number(item.quantity) * (item.dealPrice > 0 ? item.dealPrice : item.unitPrice)
+                subTotal = subTotal + Number(item.quantity) *  item.unitPrice
             }
             console.log('subTotal', subTotal)
             setAmount(subTotal)
@@ -113,9 +130,9 @@ const SalesOrder = (props) => {
                         titleList1.push({title: item.flyerTitle, flyerId: item.flyerId})
                         setDealsSoughtTitle(titleList1)
                         // setTotalDiscount(totalDiscount + )
-                        console.log((listItem[index].unitPrice - listItem[index].dealPrice) * itemList[index].quantity)
-                        totalDiscountData = totalDiscountData + (listItem[index].unitPrice - listItem[index].dealPrice) * itemList[index].quantity
-                        // console.log('CASH_VALUE', listItem[index].discount)
+                        console.log((listItem[index].unitPrice - listItem[index].dealPrice) * (itemList[index].quantity - (item.isForExceedance ? item.minimalQty : 0)))
+                        totalDiscountData = totalDiscountData + (listItem[index].unitPrice - listItem[index].dealPrice) * (itemList[index].quantity -  (item.isForExceedance ? item.minimalQty : 0))
+                        console.log('CASH_VALUE', listItem[index].discount)
                         break;
                     case 'CASH_DISCOUNT':
                         // this.$nextTick(()=> {
@@ -133,7 +150,7 @@ const SalesOrder = (props) => {
                         setDealsSoughtTitle(titleList)
                         // setTotalDiscount(totalDiscount + )
                         console.log(itemList[index].quantity * item.amount)
-                        totalDiscountData = totalDiscountData + itemList[index].quantity * item.amount
+                        totalDiscountData = totalDiscountData + (itemList[index].quantity -  (item.isForExceedance ? item.minimalQty : 0)) * item.amount
                         // console.log('CASH_DISCOUNT', listItem[index].discount)
                         // this.shoppingCartList[index].discount = this.shoppingCartList[index].quantity * item.amount
                         // })
@@ -141,7 +158,7 @@ const SalesOrder = (props) => {
                         break;
                     case 'PERCENTAGE_DISCOUNT':
                         if(item.isForAllItems) {
-                            totalDiscountData = totalDiscountData + amount * item.amount
+                            totalDiscountData = totalDiscountData + (amount - (item.isForExceedance ? item.minimalAmount : 0)) * item.amount
                             // setTotalDiscount()
                         } else {
                             // const listItem2 = [...itemList]
@@ -149,7 +166,7 @@ const SalesOrder = (props) => {
                             
                             // setItemList(listItem)
                            
-                            totalDiscountData = totalDiscountData + itemList[index].quantity * itemList[index].unitPrice * item.amount
+                            totalDiscountData = totalDiscountData + (itemList[index].quantity * itemList[index].unitPrice - (item.isForExceedance ? item.minimalAmount : 0)) * item.amount
                         }
                         const titleList2 = [...dealsSoughtTitle]
                         titleList2.push({title: item.flyerTitle, flyerId: item.flyerId})
@@ -244,12 +261,13 @@ const SalesOrder = (props) => {
                         type="clear"
                         titleStyle={{ color: themes.primary, fontSize: 12, textAlign: 'right' }}
                         onPress={()=>{
+
                             navigation.navigate('Checkout', {
                                 vendor: vendor.businessTitle,
                                 resident: customerName,
                                 customerName: customerFullName,
                                 pickupAddress,
-                                totalAmount: (amount-totalDiscount)*1.13,
+                                totalAmount: amount,
                                 totalDiscount,
                                 tax: (amount-totalDiscount) * 0.13,
                                 salesOrderItems: itemList,

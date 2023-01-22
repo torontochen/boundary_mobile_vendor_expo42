@@ -165,7 +165,7 @@ const CustomerOrders = (props) => {
               {/* amount */}
                <View style={styles.content}>
                  <Text>Items:&nbsp;{item.orderItems.length.toString()}</Text>
-                 <Text>Amount:&nbsp;{formatCurrencyAmount((item.totalAmount + item.shipping) * 1.13)}</Text>
+                 <Text>Amount:&nbsp;{formatCurrencyAmount(item.totalAmount - item.totalDiscount + item.shipping + item.tax)}</Text>
                </View>
 
                {/* Confirm and Fulfill */}

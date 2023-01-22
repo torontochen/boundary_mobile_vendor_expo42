@@ -87,16 +87,19 @@ const SingleOrderScreen = ({navigation, route}) => {
                
               {/* date */}
                <View style={styles.amount}>
-                  <Text>Subtotal:&nbsp;{formatCurrencyAmount(order.totalAmount )}</Text>
+                  <Text>Discount:&nbsp;{formatCurrencyAmount(order.totalDiscount )}</Text>
+               </View>
+               <View style={styles.amount}>
+                  <Text>Subtotal:&nbsp;{formatCurrencyAmount(order.totalAmount - order.totalDiscount )}</Text>
                </View>
                <View style={styles.amount}>
                   <Text>Shipping:&nbsp;{formatCurrencyAmount(order.shipping)}</Text>
                </View>
                <View style={styles.amount}>
-                   <Text>Tax:&nbsp;{formatCurrencyAmount(order.tax  + order.shipping * 0.13)}</Text>
+                   <Text>Tax:&nbsp;{formatCurrencyAmount(order.tax + order.shipping * 0.13 )}</Text>
                </View>
                <View style={styles.amount}>
-                   <Text>Total:&nbsp;{formatCurrencyAmount((order.totalAmount + order.shipping) * 1.13)}</Text>
+                   <Text>Total:&nbsp;{formatCurrencyAmount(order.totalAmount - order.totalDiscount + order.tax + order.shipping * 1.13 )}</Text>
                </View>
                <Card.Divider />
                <View style={styles.amount}>

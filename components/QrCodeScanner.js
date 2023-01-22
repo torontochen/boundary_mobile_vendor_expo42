@@ -92,17 +92,18 @@ const QrCodeScanner = (props) => {
       color='tomato'  
       containerStyle={styles.button}
       />
-      {/*  */}
+      {/* Scan  Coupon */}
       <Button 
-      title='Scan Combo Coupon' 
+      // title='Scan Combo Coupon' 
+      title='Scan Coupon' 
       onPress={()=>{
         const qrInfo = {
           customerName: 'chenhaoyujcgmail',
           customerFullName: 'Jack Chen',
           flyerId: 'wish_COUPON_March 11th 2022, 10:00:05 am',
           couponId: 'My Flyer_1632533020189',
-          vendor: 'wish',
-          valueType: 'COMBO_CASH_VALUE',
+          vendor: 'Pizza King',
+          valueType: 'CASH_VALUE',
           couponTitle: 'pizza combo',
           flyerTitle: 'My Flyer'
         }

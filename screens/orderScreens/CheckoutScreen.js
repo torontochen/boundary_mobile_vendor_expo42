@@ -1,9 +1,10 @@
 import React, {useState, useEffect} from 'react'
-import { View, Text, StyleSheet, Alert, Dimensions} from 'react-native'
-import { Card, CheckBox, Button, Icon, Overlay } from 'react-native-elements'
+import { View, Text, StyleSheet, Alert, Dimensions, DeviceEventEmitter} from 'react-native'
+import { Card, CheckBox, Button, Icon, Overlay, Image } from 'react-native-elements'
 import { useMutation } from '@apollo/react-hooks'
 
 import { PLACE_ORDER } from '../../queries/queries_mutation'
+import { GET_VENDOR_ORDERS, GET_CURRENT_VENDOR } from '../../queries/queries_query'
 import QrCodeScanner from '../../components/QrCodeScanner'
 import themes from '../../assets/themes'
 
@@ -44,12 +45,28 @@ const CheckoutScreen = ({ navigation, route}) => {
       }
 
 
-    const [placeOrder] = useMutation(PLACE_ORDER)
+    const [placeOrder, {loading}] = useMutation(PLACE_ORDER, {
+         async onCompleted({placeOrder}){
+            // if(impendingOrder==null)
+            // {
+                console.log('placeOrder', placeOrder)
+              navigation.navigate("Order")  
+            // } else 
+            // {
+            //     navigation.goBack();
+            // }
+            
+            
+        },
+        refetchQueries:[{ query: GET_VENDOR_ORDERS, variables: { vendor }}, 
+            { query: GET_CURRENT_VENDOR }],
+        awaitRefetchQueries: true
+    })
 
     useEffect(()=> {
         // console.log('qrInfo', qrInfo)
         if(qrInfo&&qrInfo.customerName == resident) {
-            if (qrInfo.silver > totalAmount + tax) {
+            if (qrInfo.silver / 1000 > totalAmount + tax) {
             Alert.alert('Overpaid', " ", [{ text: "OK" }])
             return
             }
@@ -83,7 +100,7 @@ const CheckoutScreen = ({ navigation, route}) => {
                 </View>
                 
                 <Card.Divider />
-                <Card.Title style={{textAlign: 'left', fontFamily: 'mr800', fontSize: 18, color: themes.secondary}}>Balance:&nbsp;{formatCurrencyAmount(totalAmount+tax-totalDiscount-silver)}</Card.Title>
+                <Card.Title style={{textAlign: 'left', fontFamily: 'mr800', fontSize: 18, color: themes.secondary}}>Balance:&nbsp;{formatCurrencyAmount(totalAmount+tax-totalDiscount-silver / 1000)}</Card.Title>
                 <Card.Divider />
                 <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly'}}>
                        <CheckBox
@@ -121,8 +138,8 @@ const CheckoutScreen = ({ navigation, route}) => {
                         <Icon 
                         name='cash-multiple'
                         type='material-community'
-                        size={36}
-                        style={{marginHorizontal: 3}}
+                        size={40}
+                        style={{marginHorizontal: 3 }}
                         color={themes.primary}
 
                     />  
@@ -154,8 +171,8 @@ const CheckoutScreen = ({ navigation, route}) => {
 
                       title="Place Order"
                       onPress={() => {
-                       
-                          placeOrder({ variables : {
+
+                        const payload = {
                             resident, 
                             vendor, 
                             deliveryType:'pickup', 
@@ -169,8 +186,17 @@ const CheckoutScreen = ({ navigation, route}) => {
                             paymentMethod: creditCardCheck ? 'creditcard' : 'cash',
                             dealsTitle,
                             salesOrderItems,
-                            valueDiscountList: []
-                          }})
+                            valueDiscountList: [],
+                            shipping: 0,
+                            note: '',
+                            impendingOrderNo: ''
+                          }
+                          console.log('payload', payload)
+                       
+                          placeOrder({ variables : payload})
+
+                    DeviceEventEmitter.emit('salesOrderDone', {done: true})
+
                       }}
                 />
             </Card>
@@ -187,6 +213,28 @@ const CheckoutScreen = ({ navigation, route}) => {
                     amount={totalAmount}
                 />
             </Overlay>
+
+            {/* Placing Order */}
+            <Overlay
+                visible={loading}
+                fullScreen
+                >
+                  <View style={{height: '100%', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
+            
+                  <Image
+                    source={require("../../assets/Screen_Shot_2022-10-14_at_11.56.26_AM-removebg-preview.png")}
+                    style={{width: 200, height: 50, alignSelf: 'center', marginBottom: 50}}
+                    resizeMode="contain"
+                    ></Image>
+                  <Image source={{uri: 'https://www.animatedimages.org/data/media/106/animated-man-image-0394.gif'}} style={{width: 80, height: 80}} resizeMode='contain' />
+
+                  </View>
+
+                {/* <ActivityIndicator
+                    color={themes.primary}
+                    size='large'
+                /> */}
+                </Overlay>
         </>
     )
 }
