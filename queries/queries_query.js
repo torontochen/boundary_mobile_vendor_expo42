@@ -61,6 +61,14 @@ export const GET_CURRENT_VENDOR = gql`
       silverCoins
       aboutUs
       emailVerified
+      existingCustomerList
+      {
+        customer
+        location
+        purchaseTimes
+        totalPurchaseAmount
+        dateLastTimePurchase
+      }
       website
       deliveryFees
       maxDeliveryDistance

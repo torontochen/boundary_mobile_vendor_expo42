@@ -281,9 +281,10 @@ errorMsgContainer: {
     borderColor: "#C51162",
     borderWidth: 1,
     borderRadius: 10,
-    width: "100%",
+    width: "95%",
     alignItems: "center",
     justifyContent: "center",
+    marginBottom: 15
   },
   form: {
     justifyContent: "space-evenly",
