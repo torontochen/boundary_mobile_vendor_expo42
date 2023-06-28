@@ -176,9 +176,9 @@ const CustomerOrders = (props) => {
                     buttonStyle={{color: themes.secondary}}
                     title={item.isConfirmed?'CONFIRMED':'Confirm'}
                     // disabledStyle={{ backgroundColor: "#ECEFF1"}}
-                    titleStyle={{fontSize: 11, color: themes.primary}}
+                    titleStyle={{fontSize: item.isConfirmed ? 12 : 14, color: item.isConfirmed ? themes.secondary : themes.primary}}
 
-                    disabledTitleStyle={{color: themes.fontColor }}
+                    disabledTitleStyle={{color: themes.secondary }}
                     disabled={item.isCanceled||item.isConfirmed}
                     onPress={()=> {
                       const index = orders.findIndex(order => item.orderNo == order.orderNo)
@@ -202,8 +202,8 @@ const CustomerOrders = (props) => {
                     buttonStyle={{color: themes.secondary}}
                     title={item.isFulfilled?'FULFILLED':'fulfill'} 
                     // disabledStyle={{ backgroundColor: "#ECEFF1"}}
-                    titleStyle={{fontSize: 11, color: themes.primary}}
-                    disabledTitleStyle={{color: themes.fontColor }}
+                    titleStyle={{fontSize: item.isFulfilled ? 12 : 14, color: item.isFulfilled ? themes.secondary : themes.primary}}
+                    disabledTitleStyle={{color: themes.secondary }}
                     disabled={item.isFulfilled||item.isCanceled}
                     onPress={()=> {
                       setOrderToFulfill(item)

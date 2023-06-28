@@ -87,6 +87,7 @@ const SalesOrder = (props) => {
             setTotalDiscount(0)
             setDealsSoughtTitle([])
             setOrderNo()
+            setAmount(0)
         })
       return () => {
         DeviceEventEmitter.removeListener('salesOrderDone')
@@ -95,7 +96,7 @@ const SalesOrder = (props) => {
 
 
     useEffect(()=>{
-        if(itemList) {
+        if(itemList && qrInfo && !qrInfo.valueType) {
             let subTotal = 0
             for (let item of itemList) {
                 // subTotal = subTotal + Number(item.quantity) * (item.dealPrice > 0 ? item.dealPrice : item.unitPrice)
@@ -202,10 +203,30 @@ const SalesOrder = (props) => {
     const [getSingleCoupon, {loading: couponLoading}] = useLazyQuery(GET_SINGLE_COUPON, {
       async onCompleted({getSingleCoupon}) {
           console.log('getSingleCoupon', getSingleCoupon)
-          const {amount, itemsBound} = getSingleCoupon
+          const {amount, itemsBound, couponId, couponTitle} = getSingleCoupon
              setAmount(amount)
-            setItemList(itemsBound)
-        }
+             const list = itemsBound.map( item => {
+                const catalogIndex = catalog.findIndex(cata => item.itemCode == cata.itemCode)
+                const catalogItem = catalog[catalogIndex]
+                return{
+                   itemCode: catalogItem.itemCode,
+                   description: catalogItem.description,
+                   unit: catalogItem.unit,
+                   unitPrice: catalogItem.promoRate > 0 ? catalogItem.promoRate : catalogItem.rate,
+                   rewardSilver: catalogItem.rewardSilver,
+                   quantity: Number(item.quantity),
+                   vendor: vendor.businessTitle,
+                   dealPrice: 0,
+                   taxRate: catalogItem.taxRate,
+                   discount: 0
+                   }
+             })
+            
+            setItemList(list)
+            setCouponId(couponId)
+            setCouponTitle(couponTitle)
+        },
+        fetchPolicy: 'network-only' 
     })
 
     // const itemPickedValue = () => {
@@ -222,7 +243,7 @@ const SalesOrder = (props) => {
     }, [itemList, indexInEdit])
 
     useEffect(()=> {
-        // console.log('qrInfo', qrInfo)
+        console.log('qrInfo', qrInfo)
         if(qrInfo&&qrInfo.valueType == 'COMBO_CASH_VALUE') {
             setCustomerName(qrInfo.customerName)
             setCustomerFullName(qrInfo.customerFullName)
@@ -305,6 +326,9 @@ const SalesOrder = (props) => {
                <View style={styles.content}>
                  {/* <Text>Items:&nbsp;{itemList.length.toString()}</Text>  */}
                  <Text>Date:&nbsp;{moment(Date.now()).format('YYYY-MM-DD HH:mm')}</Text>
+                 {itemList.length>0&&qrInfo&&qrInfo.valueType&&
+                    <Text style={{color: themes.accent, textAlign: 'left', fontSize: 11, marginVertical: 10}}>{couponTitle + ' * ' + couponId}</Text>
+                }
                  </View>
                 <Card.Divider /> 
                 {itemList&&<ScrollView style={{height: height * 0.20 }} 
@@ -317,15 +341,15 @@ const SalesOrder = (props) => {
                                             <ListItem.Subtitle style={styles.listItem}>{item.itemCode}</ListItem.Subtitle>
                                         </ListItem.Content> */}
                                         <ListItem.Content>
-                                            <ListItem.Subtitle  style={styles.listItem,{width: width * 0.2, textAlign: 'left' }} numberOfLines={1} ellipsizeMode='tail'>{item.description}</ListItem.Subtitle>
+                                            <ListItem.Subtitle  style={styles.listItem,{width: width * 0.2, textAlign: 'left' }} numberOfLines={3} ellipsizeMode='tail'>{item.description}</ListItem.Subtitle>
                                         </ListItem.Content>
                                         <ListItem.Content  right>
                                             <ListItem.Subtitle style={styles.listItem,{width: width * 0.05 }}>{item.quantity.toString()}</ListItem.Subtitle>
                                         </ListItem.Content >
-                                        {item.unitPrice&&<ListItem.Content>
+                                        {item.unitPrice&&qrInfo.valueType!='COMBO_CASH_VALUE'&&<ListItem.Content>
                                             <ListItem.Subtitle style={styles.listItem, {width: width * 0.2}}>{formatCurrencyAmount(item.unitPrice)}</ListItem.Subtitle>
                                         </ListItem.Content>}
-                                        {item.unitPrice&&<ListItem.Content>
+                                        {item.unitPrice&&qrInfo.valueType!='COMBO_CASH_VALUE'&&<ListItem.Content>
                                             <ListItem.Subtitle style={styles.listItem, {width: width * 0.2}}>{formatCurrencyAmount(item.quantity*item.unitPrice)}</ListItem.Subtitle>
                                         </ListItem.Content>}
                                         {itemList.length>0&&qrInfo.valueType!='COMBO_CASH_VALUE'&&
@@ -349,7 +373,7 @@ const SalesOrder = (props) => {
                                 </ScrollView>}
                 <Card.Divider />
                 <View style={styles.amount}>
-                    {itemList.length>0&&
+                    {itemList.length>0&&qrInfo&&!qrInfo.valueType&&
                     <Button
                     containerStyle={{
                     width: 110,
@@ -380,6 +404,7 @@ const SalesOrder = (props) => {
                         searchAvailableDeals({ variables: { input }})
                     }}
                 />}
+               
                 
                 </View>
                 {totalDiscount>0&&
@@ -435,6 +460,7 @@ const SalesOrder = (props) => {
                         setTotalDiscount(0)
                         setDealsSoughtTitle([])
                         setOrderNo()
+                        setAmount(0)
                     }}
                     disabled={!qrInfo}
                     
@@ -606,9 +632,9 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     content: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
+        flexDirection: 'column',
+        justifyContent: 'flex-start',
+        alignItems: 'flex-start',
         marginVertical: 10,
     },
     customer: {
@@ -627,7 +653,7 @@ const styles = StyleSheet.create({
     },
     listItem: {
         textAlign: 'right',
-        fontSize: 10,
+        fontSize: 4,
         color: themes.fontColor
     },
     overLay: {

@@ -100,24 +100,25 @@ const QrCodeScanner = (props) => {
         const qrInfo = {
           customerName: 'chenhaoyujcgmail',
           customerFullName: 'Jack Chen',
-          flyerId: 'wish_COUPON_March 11th 2022, 10:00:05 am',
-          couponId: 'My Flyer_1632533020189',
+          flyerId: 'PizzaKing_COUPON_1687965506273',
+          couponId: 'Pizza Feast_1669343215234',
           vendor: 'Pizza King',
-          valueType: 'CASH_VALUE',
-          couponTitle: 'pizza combo',
-          flyerTitle: 'My Flyer'
+          valueType: 'COMBO_CASH_VALUE',
+          couponTitle: 'Family Pizza',
+          flyerTitle: 'Family Pizza Combo'
         }
         setQrInfo(qrInfo)
         setIsQrScannerVisible(false)
       }} 
       containerStyle={styles.button}
       />
+      {/* Scan Silver */}
       <Button 
       title='Scan Silver' 
       onPress={()=>{
         const qrInfo = {
           customerName: 'chenhaoyujcgmail',
-          silver: 30000
+          silver: 3000
         }
         setQrInfo(qrInfo)
         setIsQrScannerVisible(false)

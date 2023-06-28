@@ -22,27 +22,44 @@ const ReportSceen = ({ route }) => {
      const [isYearToDateSalesOpen, setIsYearToDateSalesOpen] = useState(false)
      const [isYearToDateOrdersOpen, setIsYearToDateOrdersOpen] = useState(false)
      const [monthToDateSales, setMonthToDateSales] = useState()
+     const [salesMTD, setSalesMTD] = useState(0)
      const [monthToDateOrders, setMonthToDateOrders] = useState()
+     const [ordersMTD, setOrdersMTD] = useState(0)
+
      const [yearToDateSales, setYearToDateSales] = useState()
+     const [salesYTD, setSalesYTD] = useState(0)
      const [yearToDateOrders, setYearToDateOrders] = useState()
+     const [ordersYTD, setOrdersYTD] = useState(0)
 
      const goDetails = useCallback((data ) => {
           const { monthToDateSales, yearToDateSales } = data.getVendorSalesInfo
+               let salesMTDA = 0
+               let ordersMTDA = 0
+               let salesYTDA = 0
+               let ordersYTDA = 0
                const mtd = monthToDateSales.map(item => {
+                    salesMTDA += item.sales
                     return item.sales
                })
+               setSalesMTD(salesMTDA)
                setMonthToDateSales(mtd)
                const mtdo = monthToDateSales.map(item => {
+                    ordersMTDA += item.orders
                     return item.orders
                })
+               setOrdersMTD(ordersMTDA)
                setMonthToDateOrders(mtdo)
                const ytd = yearToDateSales.map(item => {
+                    salesYTDA += item.sales
                     return item.sales
                })
+               setSalesYTD(salesYTDA)
                setYearToDateSales(ytd)
                const ytdo = yearToDateSales.map(item => {
+                    ordersYTDA += item.orders
                     return item.orders
                })
+               setOrdersYTD(ordersYTDA)
                setYearToDateOrders(ytdo)
       
         }, [salesInfoData])
@@ -87,6 +104,11 @@ const ReportSceen = ({ route }) => {
           minimumFractionDigits: 2,
      // roundingIncrement: 5  
           }).format(value)
+     }
+
+     const formatIntAmount = (value) => {
+          return new Intl.NumberFormat('en-US', {  
+                         }).format(value)
      }
 
      const monthLabel = (sales) => {
@@ -415,7 +437,8 @@ const ReportSceen = ({ route }) => {
             onBackdropPress={toggleOverlay}
             overlayStyle={{width: width * 0.9, height: height * 0.77}}
             >
-          <View><Text style={{fontSize: 24, fontWeight: 'bold',  color: themes.primary, textAlign: 'center', marginVertical: 4}}>{moment(Date.now()).format("YYYY-MM-DD")}</Text></View>
+          <View><Text style={{fontSize: 24, fontWeight: 'bold',  color: themes.primary, textAlign: 'center', marginVertical: 4}}>
+               {moment(Date.now()).format("YYYY-MM-DD") + ' (' + formatCurrencyAmount(salesMTD) + ')'} </Text></View>
 
             <View style={{flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', flexWrap: 'wrap', width: '100%', height: '100%'}}>
               {monthToDateSales&&monthToDateSales.map((item, i) => {
@@ -433,7 +456,8 @@ const ReportSceen = ({ route }) => {
             onBackdropPress={toggleOverlay}
             overlayStyle={{width: width * 0.9, height: height * 0.77}}
             >
-          <View><Text style={{fontSize: 24, fontWeight: 'bold',  color: themes.primary, textAlign: 'center', marginVertical: 4}}>{moment(Date.now()).format("YYYY-MM-DD")}</Text></View>
+          <View><Text style={{fontSize: 24, fontWeight: 'bold',  color: themes.primary, textAlign: 'center', marginVertical: 4}}>
+               {moment(Date.now()).format("YYYY-MM-DD") + ' (' + formatIntAmount(ordersMTD) + ')' } </Text></View>
 
             <View style={{flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', flexWrap: 'wrap', width: '100%', height: '100%'}}>
               {monthToDateOrders&&monthToDateOrders.map((item, i) => {
@@ -451,7 +475,8 @@ const ReportSceen = ({ route }) => {
             onBackdropPress={toggleOverlay}
             overlayStyle={{width: width * 0.9, height: height * 0.45}}
             >
-          <View><Text style={{fontSize: 24, fontWeight: 'bold',  color: themes.primary, textAlign: 'center', marginVertical: 4}}>{moment(Date.now()).format("YYYY-MM-DD")}</Text></View>
+          <View><Text style={{fontSize: 24, fontWeight: 'bold',  color: themes.primary, textAlign: 'center', marginVertical: 4}}>
+               {moment(Date.now()).format("YYYY-MM-DD") + ' (' + formatCurrencyAmount(salesYTD) + ')'} </Text></View>
 
             <View style={{flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', flexWrap: 'wrap', width: '100%', height: '100%'}}>
               {yearToDateSales&&yearToDateSales.map((item, i) => {
@@ -469,7 +494,8 @@ const ReportSceen = ({ route }) => {
             onBackdropPress={toggleOverlay}
             overlayStyle={{width: width * 0.9, height: height * 0.4}}
             >
-          <View><Text style={{fontSize: 24, fontWeight: 'bold',  color: themes.primary, textAlign: 'center', marginVertical: 4}}>{moment(Date.now()).format("YYYY-MM-DD")}</Text></View>
+          <View><Text style={{fontSize: 24, fontWeight: 'bold',  color: themes.primary, textAlign: 'center', marginVertical: 4}}>
+               {moment(Date.now()).format("YYYY-MM-DD") + ' (' + formatIntAmount(ordersYTD) + ')'} </Text></View>
 
             <View style={{flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', flexWrap: 'wrap', width: '100%', height: '100%'}}>
               {yearToDateOrders&&yearToDateOrders.map((item, i) => {
