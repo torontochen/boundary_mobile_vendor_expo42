@@ -23,6 +23,8 @@ const CheckoutScreen = ({ navigation, route}) => {
         salesOrderItems,
         dealsTitle} = route.params
 
+        console.log('dealsTitle', dealsTitle)
+
     const [silver, setSilver] = useState(0)
     const [qrInfo, setQrInfo] = useState()
     const [creditCardCheck, setCreditCardCheck] = useState(true)

@@ -268,6 +268,13 @@ query($vendor: String) {
       resident
       vendor
       paymentMethod
+      dealsTitle
+      {
+            title
+            flyerId
+            couponId
+            oneTimeUsage
+          }
       isUnderDispute
       isCanceled
       isConfirmed

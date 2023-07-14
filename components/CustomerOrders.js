@@ -120,12 +120,13 @@ const CustomerOrders = (props) => {
   useSubscription(VENDOR_SETTLEMENT_RECORD_ADDED, {
       onSubscriptionData({subscriptionData}) {
         const { data: { vendorSettlementRecordAdded }} = subscriptionData
-        // console.log('vendorOrderAdded', vendorOrderAdded)
+        console.log('vendorSettlementRecordAdded', vendorSettlementRecordAdded)
         if(vendor==vendorSettlementRecordAdded.vendor) {
           // const newOrders = [...orders]
           // newOrders.push(vendorOrderAdded)
           const list = [...records]
           list.push(vendorSettlementRecordAdded)
+          console.log('list',list)
           setRecords(list)
         }
       }
@@ -138,9 +139,9 @@ const CustomerOrders = (props) => {
       
     <TouchableOpacity
       onPress={()=>{
-        const index = settlementRecords.findIndex(record => record.salesOrderNo == item.orderNo)
+        const index = records.findIndex(record => record.salesOrderNo == item.orderNo)
 
-       navigation.navigate('SingleOrder', { order: item, vendor, record: settlementRecords[index] })
+       navigation.navigate('SingleOrder', { order: item, vendor, record: records[index] })
       }}
     >
         <Card containerStyle={styles.card}>

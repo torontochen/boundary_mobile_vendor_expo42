@@ -86,8 +86,13 @@ const SingleOrderScreen = ({navigation, route}) => {
                 <Card.Divider />
                
               {/* date */}
+              {order.dealsTitle&&order.dealsTitle.length>0&&(
+                   <View style={styles.dealAmount}>
+                   <Text style={{color: themes.accent}}>{order.dealsTitle[0].title}</Text>
+                </View>
+              )}
                <View style={styles.amount}>
-                  <Text>Discount:&nbsp;{formatCurrencyAmount(order.totalDiscount )}</Text>
+                  <Text style={{color: themes.accent}}>Discount:&nbsp;-{formatCurrencyAmount(order.totalDiscount )}</Text>
                </View>
                <View style={styles.amount}>
                   <Text>Subtotal:&nbsp;{formatCurrencyAmount(order.totalAmount - order.totalDiscount )}</Text>
@@ -147,6 +152,14 @@ const styles = StyleSheet.create({
      alignItems: 'center',
      marginRight: 5,
      marginVertical: 5
+    },
+    dealAmount: {
+     flexDirection: 'row',
+     justifyContent: 'center',
+     alignItems: 'center',
+     marginRight: 5,
+     marginVertical: 5,
+     color: themes.accent
     },
     // card: {
     //   marginHorizontal: 5,

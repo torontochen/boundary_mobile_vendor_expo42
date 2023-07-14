@@ -204,10 +204,12 @@ const SalesOrder = (props) => {
       async onCompleted({getSingleCoupon}) {
           console.log('getSingleCoupon', getSingleCoupon)
           const {amount, itemsBound, couponId, couponTitle} = getSingleCoupon
-             setAmount(amount)
+          console.log('singleCoupon', getSingleCoupon)
+             let subTotal = 0
              const list = itemsBound.map( item => {
                 const catalogIndex = catalog.findIndex(cata => item.itemCode == cata.itemCode)
                 const catalogItem = catalog[catalogIndex]
+                subTotal += catalogItem.rate * Number(item.quantity)
                 return{
                    itemCode: catalogItem.itemCode,
                    description: catalogItem.description,
@@ -221,10 +223,13 @@ const SalesOrder = (props) => {
                    discount: 0
                    }
              })
-            
+
+            setAmount(subTotal)
+            setTotalDiscount(subTotal - amount)
             setItemList(list)
             setCouponId(couponId)
             setCouponTitle(couponTitle)
+            setDealsSoughtTitle([{title: couponTitle, flyerId: couponId}])
         },
         fetchPolicy: 'network-only' 
     })
@@ -408,7 +413,10 @@ const SalesOrder = (props) => {
                 
                 </View>
                 {totalDiscount>0&&
-                <View style={styles.amount}>
+                <View style={styles.dealAmount}>
+                    {soughtDeals&&
+                  <Text style={{color: 'red', marginVertical: 5}}>&nbsp;({soughtDeals[0].flyerTitle + ' _' + soughtDeals[0].couponTitle})</Text>
+                }
                   <Text style={{color: 'red'}}>Discount:&nbsp;-{formatCurrencyAmount(totalDiscount)}</Text>
                 </View>}
                <View style={styles.amount}>
@@ -461,6 +469,7 @@ const SalesOrder = (props) => {
                         setDealsSoughtTitle([])
                         setOrderNo()
                         setAmount(0)
+                        setSoughtDeals()
                     }}
                     disabled={!qrInfo}
                     
@@ -591,16 +600,20 @@ const SalesOrder = (props) => {
                 visible={couponLoading}
                 fullScreen
                 >
-               {/* <View style={{height: '100%', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
+              <View style={{height: '100%', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
             
+            <Image
+              source={require("../assets/Screen_Shot_2022-10-14_at_11.56.26_AM-removebg-preview.png")}
+              style={{width: 200, height: 50, alignSelf: 'center', marginBottom: 50}}
+              resizeMode="contain"
+              ></Image>
             <Image source={{uri: 'https://www.animatedimages.org/data/media/106/animated-man-image-0394.gif'}} style={{width: 80, height: 80}} resizeMode='contain' />
 
-            </View> */}
-
-                <ActivityIndicator
+            </View>
+                {/* <ActivityIndicator
                     color="#0000ff"
                     size='large'
-                />
+                /> */}
                 </Overlay>
         </> 
         // */}
@@ -613,6 +626,13 @@ const styles = StyleSheet.create({
      flexDirection: 'row',
      justifyContent: 'flex-end',
      alignItems: 'center',
+     marginRight: 5,
+     marginVertical: 5
+    },
+    dealAmount: {
+     flexDirection: 'column',
+     justifyContent: 'center',
+     alignItems: 'flex-end',
      marginRight: 5,
      marginVertical: 5
     },
