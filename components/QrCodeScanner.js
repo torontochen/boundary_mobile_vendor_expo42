@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, StyleSheet } from 'react-native';
+import { Text, View, StyleSheet, ImageBackground } from 'react-native';
 import {Button} from 'react-native-elements'
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import themes from '../assets/themes';
@@ -63,7 +63,11 @@ const QrCodeScanner = (props) => {
       <View style={styles.barcodebox}>
         <BarCodeScanner
           onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-          style={{ height: 400, width: 400 }} />
+          style={{ height: 250, width: 250 }} >
+      <ImageBackground source={require("../assets/QRCodeScanner1.png")} resizeMode="cover" style={styles.image}>
+      </ImageBackground>
+
+          </BarCodeScanner>
           {/* <Camera
           onBarCodeScanned={(...args) => {
             const data = args[0].data;
@@ -162,12 +166,19 @@ const styles = StyleSheet.create({
     width: 250,
     overflow: 'hidden',
     borderRadius: 30,
-    backgroundColor: 'tomato'
+    // flex: 1
+    // backgroundColor: 'tomato'
   },
   button: {
     width: '65%', 
     marginVertical: 20
-  }
+  },
+  image: {
+    // flex: 1,
+    height: 250,
+    width: 250,
+    justifyContent: 'center',
+  },
 });
 
 export default QrCodeScanner

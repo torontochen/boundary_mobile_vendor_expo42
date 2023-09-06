@@ -171,7 +171,7 @@ const CheckoutScreen = ({ navigation, route}) => {
                         backgroundColor: themes.primary
                       }}
 
-                      title="Place Order"
+                      title="Confirm"
                       onPress={() => {
 
                         const payload = {
@@ -202,6 +202,8 @@ const CheckoutScreen = ({ navigation, route}) => {
                       }}
                 />
             </Card>
+
+           
 
                {/* Qr Scanner Overlay  */}
                <Overlay

@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react'
-import {View, Text, StyleSheet, Dimensions, ScrollView, ActivityIndicator, Alert, DeviceEventEmitter} from 'react-native'
+import {View, Text, StyleSheet, Dimensions, ScrollView, TouchableWithoutFeedback,ActivityIndicator, Alert, DeviceEventEmitter} from 'react-native'
 import { Card, Icon, ListItem, Overlay, SpeedDial, Input , Button, FAB, Image} from 'react-native-elements'
 import {useMutation, useQuery, useLazyQuery} from '@apollo/react-hooks'
 import moment from 'moment'
@@ -39,7 +39,8 @@ const SalesOrder = (props) => {
     const [soughtDeals, setSoughtDeals] = useState()
     const [totalDiscount, setTotalDiscount] = useState(0)
     const [dealsSoughtTitle, setDealsSoughtTitle] = useState([])
-    
+    const [pendingOrders, setPendingOrders] = useState([])
+    const [isPendingOrdersVisible, setIsPendingOrdersVisible] = useState(false)
 
 
     // const toggleOverlay = () => {
@@ -49,6 +50,9 @@ const SalesOrder = (props) => {
             return `(${item.itemCode})${item.description}`
     }
 
+    const togglePendingOrdersOverlay = () => {
+        setIsPendingOrdersVisible(!isPendingOrdersVisible)
+       };
     
     const formatCurrencyAmount = (value) => {
     return new Intl.NumberFormat('en-US', { 
@@ -312,9 +316,9 @@ const SalesOrder = (props) => {
                   {/* <TouchableWithoutFeedback>
                   <Icon type='material' name='message' color={themes.primary} size={20}/>
                   </TouchableWithoutFeedback> */}
-                  {qrInfo&&qrInfo.valueType!='COMBO_CASH_VALUE'&&
+                  {qrInfo&&
                 <FAB
-                visible={qrInfo.valueType!='COMBO_CASH_VALUE'}
+                // visible={qrInfo}
                 icon={{ name: 'add', color: 'white' }}
                 color={themes.accent}
                 size='small'
@@ -323,7 +327,8 @@ const SalesOrder = (props) => {
                     setItemPicked(null)
                     setQuantity(null)
                 }}
-              />}
+              />
+              }
                 </View>
                 
                 <Card.Divider />
@@ -336,7 +341,7 @@ const SalesOrder = (props) => {
                 }
                  </View>
                 <Card.Divider /> 
-                {itemList&&<ScrollView style={{height: height * 0.20 }} 
+                {itemList&&<ScrollView style={{height: height * 0.25 }} 
                                     >
                                     {itemList.map((item,i) => {
                                         if (item.quantity > 0) 
@@ -351,10 +356,10 @@ const SalesOrder = (props) => {
                                         <ListItem.Content  right>
                                             <ListItem.Subtitle style={styles.listItem,{width: width * 0.05 }}>{item.quantity.toString()}</ListItem.Subtitle>
                                         </ListItem.Content >
-                                        {item.unitPrice&&qrInfo.valueType!='COMBO_CASH_VALUE'&&<ListItem.Content>
+                                        {item.unitPrice&&<ListItem.Content>
                                             <ListItem.Subtitle style={styles.listItem, {width: width * 0.2}}>{formatCurrencyAmount(item.unitPrice)}</ListItem.Subtitle>
                                         </ListItem.Content>}
-                                        {item.unitPrice&&qrInfo.valueType!='COMBO_CASH_VALUE'&&<ListItem.Content>
+                                        {item.unitPrice&&<ListItem.Content>
                                             <ListItem.Subtitle style={styles.listItem, {width: width * 0.2}}>{formatCurrencyAmount(item.quantity*item.unitPrice)}</ListItem.Subtitle>
                                         </ListItem.Content>}
                                         {itemList.length>0&&qrInfo.valueType!='COMBO_CASH_VALUE'&&
@@ -377,8 +382,9 @@ const SalesOrder = (props) => {
                                     })}
                                 </ScrollView>}
                 <Card.Divider />
-                <View style={styles.amount}>
+                
                     {itemList.length>0&&qrInfo&&!qrInfo.valueType&&
+                    <View style={styles.amount}>
                     <Button
                     containerStyle={{
                     width: 110,
@@ -408,10 +414,12 @@ const SalesOrder = (props) => {
                         }
                         searchAvailableDeals({ variables: { input }})
                     }}
-                />}
+                />
+                </View>
+                }
                
                 
-                </View>
+                
                 {totalDiscount>0&&
                 <View style={styles.dealAmount}>
                     {soughtDeals&&
@@ -444,6 +452,52 @@ const SalesOrder = (props) => {
                 buttonStyle={{backgroundColor: themes.primary}}
             >
                 <SpeedDial.Action
+                    icon={{ name: 'pending-actions', color: '#fff' }}
+                    title="Impending Orders"
+                    onPress={() =>{
+                        setIsPendingOrdersVisible(true)
+                       
+                    }}
+                    disabled={!pendingOrders.length>0}
+                    buttonStyle={{backgroundColor: themes.primary}}
+
+                />
+                <SpeedDial.Action
+                    icon={{ name: 'pending', color: '#fff' }}
+                    title="Pend Order"
+                    onPress={() =>{
+                        let orders = [...pendingOrders]
+                        orders.push({
+                            vendor: vendor.businessTitle,
+                            resident: customerName,
+                            customerName: customerFullName,
+                            pickupAddress,
+                            totalAmount: amount,
+                            totalDiscount,
+                            tax: (amount-totalDiscount) * 0.13,
+                            salesOrderItems: itemList,
+                            dealsTitle: dealsSoughtTitle ,
+                            orderNo,
+                            qrInfo,
+                            soughtDeals
+                        })
+                        setPendingOrders(orders)
+                        setQrInfo()
+                        setItemList([])
+                        setCustomerName()
+                        setCustomerFullName()
+                        setVisible(!visible)
+                        setTotalDiscount(0)
+                        setDealsSoughtTitle([])
+                        setOrderNo()
+                        setAmount(0)
+                        setSoughtDeals()
+                    }}
+                    disabled={!qrInfo}
+                    buttonStyle={{backgroundColor: themes.primary}}
+
+                />
+                <SpeedDial.Action
                     icon={{ name: 'plus', color: '#fff', type: 'antdesign' }}
                     title="Create Sales Order"
                     onPress={() =>{
@@ -475,6 +529,55 @@ const SalesOrder = (props) => {
                     
                 />
             </SpeedDial>
+
+             {/* Pending Orders */}
+             <Overlay
+                visible={isPendingOrdersVisible}
+                onBackdropPress={togglePendingOrdersOverlay}
+                 overlayStyle={{width: width * 0.80, height: height * 0.75}}>
+                     <ScrollView showsVerticalScrollIndicator={false}>
+                        {pendingOrders.length > 0 && (
+                            pendingOrders.map((order,i) => (
+                                <TouchableWithoutFeedback
+                                key={i}
+                                    onPress={()=>{
+                                        console.log('pendingOrders', pendingOrders)
+                                        setItemList(order.salesOrderItems)
+                                        setCustomerName(order.resident)
+                                        setCustomerFullName(order.customerName)
+                                        setVisible(!visible)
+                                        setTotalDiscount(order.totalDiscount)
+                                        setDealsSoughtTitle(order.dealsTitle)
+                                        setOrderNo(order.orderNo)
+                                        setAmount(order.totalAmount)
+                                        setItemList(order.salesOrderItems)
+                                        setIsPendingOrdersVisible(false)
+                                        setQrInfo(order.qrInfo)
+                                        setSoughtDeals(order.soughtDeals)
+                                        let orders = [...pendingOrders]
+                                        orders.splice(i, 1)
+                                        setPendingOrders(orders)
+                                    }}
+                                    >
+                                     <Card containerStyle={{marginHorizontal: 5,
+                                    marginVertical: 10,
+                                    width: '95%',
+                                    height: height * 1/8,
+                                    backgroundColor: 'white',
+                                    borderColor: 'white',
+                                    borderRadius: 5,
+                                    paddingHorizontal: 10}} >
+                                    <Card.Title style={{textAlign: 'left', marginVertical: 2, marginLeft: 5, fontWeight: 'bold', color: themes.accent}}>{order.orderNo}</Card.Title>
+                                    <Card.Divider />                 
+                                    <Card.Title style={{textAlign: 'left', marginVertical: 2, marginLeft: 5, color: themes.primary}}>Customer:&nbsp;{order.customerName}</Card.Title>
+                                        
+                                </Card>
+                                </TouchableWithoutFeedback>
+                               
+                            ))
+                        )}
+                        </ScrollView>
+            </Overlay>
 
             {/* Qr Scanner Overlay  */}
             <Overlay
@@ -565,6 +668,9 @@ const SalesOrder = (props) => {
                         }
                         setIsInputOverlayVisible(!isInputOverlayVisible)
                         setIndexInEdit()
+                        if(qrInfo.valueType == 'COMBO_CASH_VALUE') {
+                            setAmount(amount + singleItem.quantity * singleItem.unitPrice)
+                        }
 
                     }}
                     title="OK"
